@@ -40,14 +40,16 @@ export default function Navbar({ currentView, setCurrentView, currentUser, onOpe
             <i className="bi bi-grid-fill me-1"></i> Events
           </button>
 
-          <button
-            type="button"
-            className={`evege-nav-btn ${currentView === 'my-registrations' ? 'active' : ''}`}
-            onClick={() => setCurrentView('my-registrations')}
-          >
-            <i className="bi bi-ticket-perforated me-1"></i> My Registrations
-            {registrationCount > 0 && <span className="nav-badge ms-1">{registrationCount}</span>}
-          </button>
+          {currentUser && (
+            <button
+              type="button"
+              className={`evege-nav-btn ${currentView === 'my-registrations' ? 'active' : ''}`}
+              onClick={() => setCurrentView('my-registrations')}
+            >
+              <i className="bi bi-ticket-perforated me-1"></i> My Registrations
+              {registrationCount > 0 && <span className="nav-badge ms-1">{registrationCount}</span>}
+            </button>
+          )}
 
           {isAdmin && (
             <button

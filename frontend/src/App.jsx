@@ -20,7 +20,7 @@ export default function App() {
   const [registrations, setRegistrations] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Authentication State with defensive localStorage parsing
+  // Authentication State with defensive localStorage parsing (defaults to null until login)
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const stored = localStorage.getItem('evege_user');
@@ -31,16 +31,9 @@ export default function App() {
         }
       }
     } catch {
-      // fall back to default student
+      // not logged in
     }
-    return {
-      fullName: 'Sudanshu Pandey',
-      email: 'student@email.com',
-      role: 'STUDENT',
-      college: 'Delhi Technological University',
-      branch: 'Computer Science & Engineering',
-      rollNumber: '23CSE1042'
-    };
+    return null;
   });
 
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -52,10 +45,14 @@ export default function App() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
+      const regsPromise = currentUser?.email
+        ? fetchRegistrations(currentUser.email).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] });
+
       const [eventsRes, statsRes, regsRes] = await Promise.all([
         fetchEvents().catch(() => ({ data: [] })),
         fetchStats().catch(() => ({ data: null })),
-        fetchRegistrations().catch(() => ({ data: [] }))
+        regsPromise
       ]);
       setEvents(Array.isArray(eventsRes?.data) ? eventsRes.data : []);
       setStats(statsRes?.data || null);
@@ -68,7 +65,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUser?.email]);
 
   useEffect(() => {
     loadAll();
@@ -173,12 +170,29 @@ export default function App() {
           <AdminPanel onBackToHome={() => setCurrentView('home')} />
         )}
 
-        {/* VIEW: MY REGISTRATIONS */}
+        {/* VIEW: MY REGISTRATIONS (Only visible when logged in) */}
         {currentView === 'my-registrations' && (
-          <MyRegistrations
-            currentUser={currentUser}
-            onBrowseEvents={() => setCurrentView('home')}
-          />
+          currentUser ? (
+            <MyRegistrations
+              currentUser={currentUser}
+              onBrowseEvents={() => setCurrentView('home')}
+            />
+          ) : (
+            <div className="card p-5 my-4 text-center border-0 shadow-sm rounded-4 bg-white">
+              <i className="bi bi-shield-lock fs-1 text-primary mb-3"></i>
+              <h4 className="fw-bold">Student Sign-In Required</h4>
+              <p className="text-muted small mb-4">Please log in to your student account to view your confirmed event passes and registrations.</p>
+              <div>
+                <button
+                  type="button"
+                  className="btn btn-primary px-4 fw-bold shadow-sm"
+                  onClick={() => handleOpenAuth('student-login')}
+                >
+                  <i className="bi bi-person me-1"></i> Sign In as Student
+                </button>
+              </div>
+            </div>
+          )
         )}
 
         {/* VIEW: HOME (Hero + 3 Main Categories + Running Events) */}
