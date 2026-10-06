@@ -77,17 +77,27 @@ PostgreSQL is started by Compose with database `evege_db` already created, so no
 step is needed in this mode. pgAdmin can connect using host `localhost`, port `5432`,
 database `evege_db`, user `postgres`, and password `postgres`.
 
-## 4. CI/CD
+## 4. Deploying to Render & Vercel
 
-Push to `main` on GitHub — `.github/workflows/docker-build.yml` builds both images
-(Cached with GitHub Actions cache).
+### Backend on Render (Web Service):
+1. **Repository:** Connect your GitHub repository `EVEGE`.
+2. **Root Directory:** `backend` (or build from root using Dockerfile).
+3. **Build Command:** `mvn clean package -DskipTests`
+4. **Start Command:** `java -jar target/*.jar`
+5. **Environment Variables:**
+   - `DATABASE_URL`: Your Render PostgreSQL database connection string (auto-detected and formatted by `DatabaseConfig`).
+   - `APP_JWT_SECRET`: Random 256-bit secret key.
+   - `PORT`: (Automatically assigned by Render).
 
-```bash
-git init && git add . && git commit -m "EVEGE initial commit"
-git branch -M main
-git remote add origin https://github.com/<YOUR-USERNAME>/evege.git
-git push -u origin main
-```
+### Frontend on Vercel:
+1. **Repository:** Connect your GitHub repository `EVEGE`.
+2. **Framework Preset:** `Vite`
+3. **Root Directory:** `frontend`
+4. **Build Command:** `npm run build`
+5. **Output Directory:** `dist`
+6. **Environment Variables:**
+   - `VITE_API_BASE_URL`: URL of your deployed Render backend (e.g. `https://evege-backend.onrender.com`).
+   *(The app automatically handles appending `/api` and single-page routing via `vercel.json`)*.
 
 ## Features
 

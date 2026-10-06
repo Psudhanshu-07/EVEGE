@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-// Vite dev proxy and Nginx both forward /api -> backend:8082.
-// Override with VITE_API_BASE_URL to target the API directly, e.g.
-// http://localhost:8082/api
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Resolve API Base URL:
+// In local dev: defaults to '/api' (proxied by Vite to localhost:8082).
+// In Vercel production: set VITE_API_BASE_URL environment variable to your Render backend (e.g. https://evege-backend.onrender.com)
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+const cleanUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
+const BASE_URL = cleanUrl === '/api' || cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
 
 const http = axios.create({
   baseURL: BASE_URL,
@@ -16,10 +18,24 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-export const fetchEvents = () => http.get('/events');
-export const fetchStats = () => http.get('/events/stats');
-export const fetchRegistrations = () => http.get('/registrations');
-export const registerForEvent = (registrationData) => http.post('/registrations', registrationData);
+// Auth endpoints
 export const login = (credentials) => http.post('/auth/login', credentials);
+export const registerUser = (userData) => http.post('/auth/register', userData);
+export const fetchCurrentUser = () => http.get('/auth/me');
+export const fetchAllUsers = () => http.get('/auth/users');
+
+// Event endpoints
+export const fetchEvents = () => http.get('/events');
+export const fetchEventById = (id) => http.get(`/events/${id}`);
+export const createEvent = (eventData) => http.post('/events', eventData);
+export const deleteEvent = (id) => http.delete(`/events/${id}`);
+export const fetchStats = () => http.get('/events/stats');
+
+// Registration endpoints
+export const fetchRegistrations = (email) => {
+  const url = email ? `/registrations?email=${encodeURIComponent(email)}` : '/registrations';
+  return http.get(url);
+};
+export const registerForEvent = (registrationData) => http.post('/registrations', registrationData);
 
 export default http;

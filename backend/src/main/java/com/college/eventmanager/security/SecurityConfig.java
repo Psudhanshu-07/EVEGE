@@ -1,5 +1,6 @@
 package com.college.eventmanager.security;
 
+import com.college.eventmanager.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,9 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -31,7 +32,7 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    /** Stateless API security: JWT filter, permitAll on the public endpoints, CORS open. */
+    /** Stateless API security: JWT filter, permitAll on public endpoints, CORS open. */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -42,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/events/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/events/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/events/**").permitAll()
                 .requestMatchers("/api/registrations/**").permitAll()
                 .anyRequest().permitAll()
             )
@@ -64,19 +67,15 @@ public class SecurityConfig {
         return source;
     }
 
-    /** In-memory admin credentials used by /api/auth/login. */
+    /** Database-backed UserDetailsService using PostgreSQL users table. */
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        return new InMemoryUserDetailsManager(
-            User.withUsername("admin")
-                .password(passwordEncoder.encode("admin123"))
-                .roles("ADMIN")
-                .build(),
-            User.withUsername("evege@college.edu")
-                .password(passwordEncoder.encode("evege123"))
-                .roles("USER")
-                .build()
-        );
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+        return identifier -> userRepository.findByEmail(identifier)
+                .map(u -> User.withUsername(u.getEmail())
+                        .password(u.getPassword())
+                        .roles(u.getRole() != null ? u.getRole().replace("ROLE_", "") : "STUDENT")
+                        .build())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email or username: " + identifier));
     }
 
     @Bean

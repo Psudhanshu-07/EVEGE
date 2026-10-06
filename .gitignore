@@ -23,5 +23,8 @@ Thumbs.db
 # Logs
 *.log
 
-# Local verification tooling
+# Local verification & databases
 .verify/
+pgdata/
+.freebuff/
+.kilo/
