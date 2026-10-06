@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+target/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+dist/
+build/
+*.jar
+!maven-wrapper.jar
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local verification tooling
+.verify/

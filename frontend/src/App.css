@@ -1,0 +1,930 @@
+/* ============================================================
+   EVEGE — Theme (based on the provided design)
+   Navy gradient hero · blue accent · light app shell
+   ============================================================ */
+
+:root {
+  --evege-navy-900: #071630;
+  --evege-navy-800: #0b1f3f;
+  --evege-navy-700: #102a52;
+  --evege-blue: #2563eb;
+  --evege-blue-dark: #1d4ed8;
+  --evege-blue-light: #e8f0ff;
+  --evege-sky: #4f9cf9;
+  --evege-bg: #f3f7ff;
+  --evege-card: #ffffff;
+  --evege-border: #e4ebf7;
+  --evege-text: #0f1b33;
+  --evege-muted: #64748b;
+  --evege-success: #16a34a;
+  --evege-radius: 14px;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* keep the icon font on bootstrap-icons glyphs */
+.bi {
+  font-family: 'bootstrap-icons' !important;
+}
+
+body {
+  background-color: var(--evege-bg);
+  color: var(--evege-text);
+  min-height: 100vh;
+}
+
+.handwritten {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+}
+
+/* ---------- Logo ---------- */
+.evege-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.evege-logo .logo-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--evege-blue), var(--evege-sky));
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.evege-logo .logo-text {
+  line-height: 1;
+}
+
+.evege-logo .logo-name {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.14em;
+}
+
+.evege-logo .logo-tag {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  opacity: 0.7;
+  margin-top: 3px;
+}
+
+.evege-logo.on-dark .logo-name { color: #fff; }
+.evege-logo.on-dark .logo-tag { color: #cfe0ff; }
+.evege-logo.on-light .logo-name { color: var(--evege-navy-800); }
+.evege-logo.on-light .logo-tag { color: var(--evege-muted); }
+
+/* ---------- Landing ---------- */
+.landing-wrap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(380px, 44%) 1fr;
+}
+
+.landing-hero {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(79, 156, 249, 0.45), transparent 55%),
+    radial-gradient(ellipse at 85% 80%, rgba(37, 99, 235, 0.35), transparent 50%),
+    linear-gradient(160deg, var(--evege-navy-900) 0%, var(--evege-navy-700) 55%, #12376e 100%);
+  color: #fff;
+  padding: 2.4rem clamp(1.6rem, 3vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.landing-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 75%, transparent);
+  pointer-events: none;
+}
+
+.landing-hero > * { position: relative; z-index: 1; }
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.hero-blurb {
+  font-size: 0.8rem;
+  color: #cfe0ff;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.hero-headline {
+  margin-top: auto;
+  font-size: clamp(2.4rem, 3.4vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.hero-headline .accent {
+  background: linear-gradient(90deg, #58a6ff, #7cc4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-sub {
+  color: #b9cdf2;
+  font-size: 0.95rem;
+  max-width: 30rem;
+  margin-top: 1rem;
+}
+
+.hero-features {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-features li {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+}
+
+.hero-features .feat-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8fc0ff;
+  font-size: 1rem;
+}
+
+.hero-features h6 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.hero-features p {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: #a9c1ea;
+}
+
+.hero-signature {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  color: #8fc0ff;
+  transform: rotate(-3deg);
+  display: inline-block;
+}
+
+.landing-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(79, 156, 249, 0.12), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.1), transparent 45%),
+    var(--evege-bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--evege-card);
+  border: 1px solid var(--evege-border);
+  border-radius: 20px;
+  padding: 2rem clamp(1.2rem, 3vw, 2.4rem);
+  box-shadow: 0 18px 50px rgba(15, 27, 51, 0.08);
+}
+
+.auth-card.compact { max-width: 430px; }
+
+.auth-card h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.auth-card .sub {
+  text-align: center;
+  color: var(--evege-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1.4rem;
+}
+
+/* ---------- Form controls ---------- */
+.evege-input,
+select.evege-input,
+textarea.evege-input {
+  width: 100%;
+  border: 1px solid var(--evege-border);
+  background: #fbfcff;
+  border-radius: 10px;
+  padding: 0.62rem 0.85rem 0.62rem 2.4rem;
+  font-size: 0.86rem;
+  color: var(--evege-text);
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.evege-input.no-icon { padding-left: 0.85rem; }
+
+.evege-input:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--evege-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.evege-input::placeholder { color: #9aa8bf; }
+
+.input-wrap { position: relative; }
+
+.input-wrap > i,
+.input-wrap > .bi {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #93a4c0;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.input-wrap .toggle-pass {
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #93a4c0;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+
+.form-label-sm {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.28rem;
+  display: block;
+}
+
+.gender-pills {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.gender-pill {
+  flex: 1;
+  min-width: 90px;
+  border: 1px solid var(--evege-border);
+  background: #fbfcff;
+  border-radius: 10px;
+  padding: 0.5rem;
+  font-size: 0.82rem;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.gender-pill.active {
+  border-color: var(--evege-blue);
+  background: var(--evege-blue-light);
+  color: var(--evege-blue-dark);
+  font-weight: 600;
+}
+
+.btn-evege {
+  background: linear-gradient(135deg, var(--evege-blue), var(--evege-blue-dark));
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  padding: 0.7rem 1.2rem;
+  width: 100%;
+  transition: transform 0.12s, box-shadow 0.15s, filter 0.15s;
+}
+
+.btn-evege:hover:not(:disabled) {
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.32);
+}
+
+.btn-evege:disabled { opacity: 0.65; }
+
+.btn-outline-evege {
+  border: 1px solid var(--evege-border);
+  background: #fff;
+  color: var(--evege-text);
+  font-weight: 600;
+  font-size: 0.86rem;
+  border-radius: 10px;
+  padding: 0.62rem 1.2rem;
+  width: 100%;
+}
+
+.btn-outline-evege:hover { background: #f7faff; color: var(--evege-text); }
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.divider-or {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--evege-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 1rem 0;
+}
+
+.divider-or::before,
+.divider-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--evege-border);
+}
+
+/* ---------- App shell ---------- */
+.evege-navbar {
+  background: linear-gradient(100deg, var(--evege-navy-900), var(--evege-navy-700));
+  padding: 0.7rem 0;
+  box-shadow: 0 4px 20px rgba(7, 22, 48, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.evege-navbar .nav-link {
+  color: #c6d7f5;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+}
+
+.evege-navbar .nav-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+.evege-navbar .nav-link.active {
+  color: #fff;
+  background: rgba(79, 156, 249, 0.25);
+  font-weight: 600;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #e5eefc;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem 0.3rem 0.35rem;
+}
+
+.user-chip .avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--evege-sky), var(--evege-blue));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.page-shell { padding: 1.6rem 0 3rem; }
+
+.back-link {
+  color: var(--evege-blue);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+/* ---------- Cards / stats ---------- */
+.evege-card {
+  background: var(--evege-card);
+  border: 1px solid var(--evege-border);
+  border-radius: var(--evege-radius);
+  box-shadow: 0 6px 20px rgba(15, 27, 51, 0.05);
+}
+
+.evege-card .card-pad { padding: 1.2rem; }
+
+.stat-box {
+  background: var(--evege-card);
+  border: 1px solid var(--evege-border);
+  border-radius: var(--evege-radius);
+  padding: 1.1rem 1.2rem;
+  height: 100%;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(15, 27, 51, 0.09);
+}
+
+.stat-box .stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--evege-muted);
+}
+
+.stat-box .stat-value { font-size: 1.6rem; font-weight: 800; }
+
+.stat-box .stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.tint-blue   { background: #e8f0ff; color: var(--evege-blue); }
+.tint-green  { background: #e6f7ee; color: var(--evege-success); }
+.tint-amber  { background: #fff3e2; color: #d97706; }
+.tint-purple { background: #f1e9ff; color: #7c3aed; }
+
+.section-title {
+  font-size: 1.02rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ---------- Event cards / table ---------- */
+.event-card {
+  background: var(--evege-card);
+  border: 1px solid var(--evege-border);
+  border-radius: var(--evege-radius);
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(15, 27, 51, 0.12);
+}
+
+.event-card .event-banner {
+  height: 96px;
+  position: relative;
+  color: #fff;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.75rem;
+}
+
+.event-card .event-banner.tech     { background: linear-gradient(135deg, #0b1f3f, #2563eb); }
+.event-card .event-banner.cultural { background: linear-gradient(135deg, #4c1d95, #7c3aed); }
+.event-card .event-banner.hack     { background: linear-gradient(135deg, #065f46, #10b981); }
+.event-card .event-banner.career   { background: linear-gradient(135deg, #7c2d12, #f59e0b); }
+.event-card .event-banner.sports   { background: linear-gradient(135deg, #0f766e, #0ea5e9); }
+.event-card .event-banner.default  { background: linear-gradient(135deg, #0b1f3f, #4f9cf9); }
+
+.event-card .banner-date {
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.event-card .event-body { padding: 0.95rem 1rem 1.1rem; display: flex; flex-direction: column; flex: 1; }
+
+.badge-cat {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.55rem;
+  border-radius: 6px;
+  background: var(--evege-blue-light);
+  color: var(--evege-blue-dark);
+}
+
+.meta-line {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.79rem;
+  color: var(--evege-muted);
+}
+
+.meta-line i { color: var(--evege-sky); }
+
+.fee-pill {
+  font-weight: 800;
+  color: var(--evege-success);
+  font-size: 1.02rem;
+}
+
+.btn-pay {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 9px;
+  padding: 0.5rem 0.9rem;
+}
+
+.btn-pay:hover { color: #fff; filter: brightness(1.05); }
+
+.evege-table { margin-bottom: 0; }
+.evege-table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--evege-muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--evege-border);
+  background: #f8faff;
+}
+.evege-table tbody td { font-size: 0.85rem; vertical-align: middle; }
+
+/* ---------- Event detail + stepper ---------- */
+.detail-hero {
+  background: linear-gradient(135deg, var(--evege-navy-900), var(--evege-navy-700) 60%, #14418a);
+  color: #fff;
+  border-radius: var(--evege-radius);
+  padding: 1.4rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.detail-hero::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 156, 249, 0.5), transparent 70%);
+}
+
+.detail-hero h2 { font-size: 1.5rem; font-weight: 800; margin: 0.4rem 0; }
+
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e7f0ff;
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--evege-card);
+  border: 1px solid var(--evege-border);
+  border-radius: var(--evege-radius);
+  padding: 0.85rem 1rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--evege-muted);
+  font-weight: 600;
+}
+
+.step .dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #eef2fa;
+  color: var(--evege-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.step.active { color: var(--evege-blue-dark); }
+.step.active .dot { background: var(--evege-blue); color: #fff; }
+
+.step.done .dot { background: var(--evege-success); color: #fff; }
+.step.done { color: var(--evege-success); }
+
+.step-line { flex: 1; height: 2px; background: var(--evege-border); min-width: 20px; }
+.step-line.filled { background: linear-gradient(90deg, var(--evege-success), var(--evege-blue)); }
+
+.detail-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 1.2rem; }
+
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px dashed var(--evege-border);
+  font-size: 0.85rem;
+}
+
+.kv-row:last-child { border-bottom: none; }
+.kv-row .k { color: var(--evege-muted); display: inline-flex; align-items: center; gap: 0.45rem; }
+.kv-row .v { font-weight: 700; text-align: right; }
+
+.qr-frame {
+  background: #fff;
+  border: 1px solid var(--evege-border);
+  border-radius: 16px;
+  padding: 0.9rem;
+  display: inline-block;
+  box-shadow: 0 10px 26px rgba(15, 27, 51, 0.08);
+}
+
+.upi-apps {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.7rem;
+}
+
+.upi-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.62rem;
+  color: var(--evege-muted);
+}
+
+.upi-app span {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #fff;
+}
+
+.countdown {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #dc2626;
+}
+
+.notice-strip {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: var(--evege-blue-light);
+  border: 1px solid #cddcff;
+  color: #1e3a8a;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.notice-strip.success { background: #e9f9f0; border-color: #bdebd2; color: #14532d; }
+
+.secure-line {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.78rem;
+  color: var(--evege-muted);
+}
+
+/* ---------- Modal ---------- */
+.evege-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 22, 48, 0.62);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.evege-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+}
+
+.evege-modal .modal-hd {
+  background: linear-gradient(100deg, var(--evege-navy-900), var(--evege-navy-700));
+  color: #fff;
+  padding: 0.85rem 1.1rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.evege-modal .modal-bd { padding: 1.2rem; }
+.evege-modal .modal-ft {
+  padding: 0.85rem 1.2rem;
+  border-top: 1px solid var(--evege-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+/* ---------- Misc ---------- */
+.empty-state {
+  text-align: center;
+  color: var(--evege-muted);
+  padding: 2.5rem 1rem;
+}
+
+.empty-state i { font-size: 2rem; color: #c3d0e8; }
+
+.alert-evege {
+  background: #fdecec;
+  border: 1px solid #f6c8c8;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.brand-footnote {
+  text-align: center;
+  color: var(--evege-muted);
+  font-size: 0.76rem;
+  padding: 1.4rem 0 0.4rem;
+}
+
+.status-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.confirmed { background: #e6f7ee; color: var(--evege-success); }
+.status-badge.pending { background: #fff3e2; color: #d97706; }
+
+.app-root {
+  min-height: 100vh;
+}
+
+/* ---------- Filter tabs (EventList) ---------- */
+.evege-pills {
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.evege-pills .nav-link {
+  border: 1px solid var(--evege-border);
+  background: #fbfcff;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  transition: all 0.15s;
+}
+
+.evege-pills .nav-link:hover {
+  border-color: #c9d8f5;
+  color: var(--evege-blue-dark);
+}
+
+.evege-pills .nav-link.active {
+  background: linear-gradient(135deg, var(--evege-blue), var(--evege-blue-dark));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+
+/* ---------- Submission banner ---------- */
+.banner-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  margin-bottom: 1.2rem;
+  animation: evege-slide 0.25s ease-out;
+  box-shadow: 0 10px 26px rgba(15, 27, 51, 0.1);
+}
+
+.banner-toast.success {
+  background: #e9f9f0;
+  border: 1px solid #bdebd2;
+  color: #14532d;
+}
+
+.banner-toast.success i { color: var(--evege-success); }
+
+.banner-toast.error {
+  background: #fdecec;
+  border: 1px solid #f6c8c8;
+  color: #991b1b;
+}
+
+.banner-toast.error i { color: #dc2626; }
+
+.banner-toast .btn-close-custom {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.banner-toast .btn-close-custom:hover { opacity: 1; }
+
+@keyframes evege-slide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 991px) {
+  .landing-wrap { grid-template-columns: 1fr; }
+  .landing-hero { min-height: auto; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .step span.label { display: none; }
+}
