@@ -11,6 +11,8 @@ export default function CategorySection({ events = [], onSelectEventForRegistrat
   const [selectedCategory, setSelectedCategory] = useState('Technical');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const safeEvents = Array.isArray(events) ? events : [];
+
   // Helper to normalize category name (e.g. 'Techfest' -> 'Technical')
   const normalizeCat = (cat) => {
     if (!cat) return 'Technical';
@@ -21,20 +23,20 @@ export default function CategorySection({ events = [], onSelectEventForRegistrat
     return cat;
   };
 
-  const filteredEvents = events.filter((ev) => {
+  const filteredEvents = safeEvents.filter((ev) => {
     const matchesCategory =
       selectedCategory === 'all' || normalizeCat(ev.category) === selectedCategory;
     const matchesSearch =
       !searchQuery.trim() ||
-      ev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (ev.title && ev.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (ev.description && ev.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (ev.venue && ev.venue.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
   const getCategoryCount = (catId) => {
-    if (catId === 'all') return events.length;
-    return events.filter((e) => normalizeCat(e.category) === catId).length;
+    if (catId === 'all') return safeEvents.length;
+    return safeEvents.filter((e) => normalizeCat(e.category) === catId).length;
   };
 
   return (

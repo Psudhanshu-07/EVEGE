@@ -20,21 +20,27 @@ export default function App() {
   const [registrations, setRegistrations] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Authentication State
+  // Authentication State with defensive localStorage parsing
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const stored = localStorage.getItem('evege_user');
-      return stored ? JSON.parse(stored) : {
-        fullName: 'Sudanshu Pandey',
-        email: 'student@email.com',
-        role: 'STUDENT',
-        college: 'Delhi Technological University',
-        branch: 'Computer Science & Engineering',
-        rollNumber: '23CSE1042'
-      };
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && parsed.email) {
+          return parsed;
+        }
+      }
     } catch {
-      return null;
+      // fall back to default student
     }
+    return {
+      fullName: 'Sudanshu Pandey',
+      email: 'student@email.com',
+      role: 'STUDENT',
+      college: 'Delhi Technological University',
+      branch: 'Computer Science & Engineering',
+      rollNumber: '23CSE1042'
+    };
   });
 
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -47,17 +53,17 @@ export default function App() {
     setLoading(true);
     try {
       const [eventsRes, statsRes, regsRes] = await Promise.all([
-        fetchEvents(),
+        fetchEvents().catch(() => ({ data: [] })),
         fetchStats().catch(() => ({ data: null })),
         fetchRegistrations().catch(() => ({ data: [] }))
       ]);
-      setEvents(eventsRes.data || []);
-      setStats(statsRes.data || null);
-      setRegistrations(regsRes.data || []);
+      setEvents(Array.isArray(eventsRes?.data) ? eventsRes.data : []);
+      setStats(statsRes?.data || null);
+      setRegistrations(Array.isArray(regsRes?.data) ? regsRes.data : []);
     } catch (err) {
       setBanner({
         type: 'danger',
-        text: 'Backend not reachable on http://localhost:8082. Check that PostgreSQL and Spring Boot are running.'
+        text: 'Backend connection pending. Check that PostgreSQL and Spring Boot are running.'
       });
     } finally {
       setLoading(false);

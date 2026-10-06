@@ -61,30 +61,22 @@ export default function Navbar({ currentView, setCurrentView, currentUser, onOpe
 
           {/* User profile / Login */}
           {currentUser ? (
-            <div className="dropdown">
-              <div
-                className="user-pill d-flex align-items-center gap-2"
-                id="userDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <div className={`user-avatar ${isAdmin ? 'admin-avatar' : ''}`}>
-                  {isAdmin ? 'AD' : (currentUser.fullName ? currentUser.fullName.substring(0, 2).toUpperCase() : 'ST')}
-                </div>
-                <div className="user-info-text text-start d-none d-sm-block">
-                  <div className="user-name">{currentUser.fullName || currentUser.email}</div>
-                  <div className="user-role-label">{isAdmin ? 'Administrator' : 'Student'}</div>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-logout-icon ms-1"
-                  onClick={onLogout}
-                  title="Logout"
-                >
-                  <i className="bi bi-box-arrow-right"></i>
-                </button>
+            <div className="user-pill d-flex align-items-center gap-2">
+              <div className={`user-avatar ${isAdmin ? 'admin-avatar' : ''}`}>
+                {isAdmin ? 'AD' : (currentUser?.fullName ? currentUser.fullName.substring(0, 2).toUpperCase() : 'ST')}
               </div>
+              <div className="user-info-text text-start d-none d-sm-block">
+                <div className="user-name">{currentUser?.fullName || currentUser?.email || 'User'}</div>
+                <div className="user-role-label">{isAdmin ? 'Administrator' : 'Student'}</div>
+              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-logout-icon ms-1"
+                onClick={onLogout}
+                title="Logout"
+              >
+                <i className="bi bi-box-arrow-right"></i>
+              </button>
             </div>
           ) : (
             <div className="d-flex gap-2">
