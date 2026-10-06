@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="evegeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#evegeGrad)"/>
+  <rect x="5" y="5" width="54" height="54" rx="15" stroke="white" stroke-opacity="0.25" stroke-width="1.5" fill="none"/>
+  <path d="M4 20C4 13.3726 9.37258 8 16 8H48C54.6274 8 60 13.3726 60 20V22H4V20Z" fill="white" fill-opacity="0.18"/>
+  <rect x="18" y="5" width="4" height="7" rx="2" fill="white"/>
+  <rect x="42" y="5" width="4" height="7" rx="2" fill="white"/>
+  <path d="M22 28H42C43.1046 28 44 28.8954 44 30C44 31.1046 43.1046 32 42 32H22V28Z" fill="white"/>
+  <path d="M22 35H35C36.1046 35 37 35.8954 37 37C37 38.1046 36.1046 39 35 39H22V35Z" fill="white"/>
+  <path d="M22 42H42C43.1046 42 44 42.8954 44 44C44 45.1046 43.1046 46 42 46H22V42Z" fill="white"/>
+  <rect x="19" y="28" width="5" height="18" rx="2.5" fill="white"/>
+  <path d="M42 34L43.8 37.8L48 39L43.8 40.2L42 44L40.2 40.2L36 39L40.2 37.8L42 34Z" fill="url(#starGrad)"/>
+</svg>

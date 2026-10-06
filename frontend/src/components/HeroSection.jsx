@@ -9,8 +9,8 @@ export default function HeroSection({ onExplore, onOpenRegister }) {
           <div>
             {/* Top Brand Header */}
             <div className="d-flex align-items-center gap-3 mb-4">
-              <div className="hero-logo-box">
-                <i className="bi bi-calendar2-star-fill text-primary fs-3"></i>
+              <div className="hero-logo-box p-0 bg-transparent border-0 shadow-none">
+                <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '44px', height: '44px', borderRadius: '11px' }} />
               </div>
               <div>
                 <div className="hero-brand-name fw-bold text-white fs-3 lh-1">EVEGE</div>

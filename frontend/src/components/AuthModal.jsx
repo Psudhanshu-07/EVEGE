@@ -190,9 +190,9 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
         {mode === 'student-register' && (
           <div className="auth-body">
             <div className="text-center mb-3">
-              <div className="brand-logo-inline">
-                <i className="bi bi-calendar2-star text-primary fs-3"></i>
-                <span className="brand-text-sm ms-2">EVEGE</span>
+              <div className="brand-logo-inline d-flex align-items-center justify-content-center gap-2">
+                <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+                <span className="brand-text-sm">EVEGE</span>
               </div>
               <h4 className="fw-bold mt-2 mb-1">Create Your Account</h4>
               <p className="text-muted small">Join EVEGE and be a part of exciting college events.</p>
@@ -439,9 +439,9 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
         {mode === 'student-login' && (
           <div className="auth-body py-2">
             <div className="text-center mb-4">
-              <div className="brand-logo-inline">
-                <i className="bi bi-mortarboard-fill text-primary fs-3"></i>
-                <span className="brand-text-sm ms-2">EVEGE STUDENT</span>
+              <div className="brand-logo-inline d-flex align-items-center justify-content-center gap-2">
+                <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+                <span className="brand-text-sm">EVEGE STUDENT</span>
               </div>
               <h4 className="fw-bold mt-2 mb-1">Student Login</h4>
               <p className="text-muted small">Access your registered events, passes, and campus activities.</p>

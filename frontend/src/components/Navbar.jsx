@@ -8,8 +8,8 @@ export default function Navbar({ currentView, setCurrentView, currentUser, onOpe
       <div className="container-fluid px-4 d-flex align-items-center justify-content-between gap-3">
         {/* Brand Logo */}
         <div className="evege-brand-header d-flex align-items-center gap-3 cursor-pointer" onClick={() => setCurrentView('home')}>
-          <div className="logo-icon-box">
-            <i className="bi bi-calendar2-star-fill"></i>
+          <div className="logo-icon-box p-0 bg-transparent border-0 shadow-none">
+            <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '40px', height: '40px', borderRadius: '10px' }} />
           </div>
           <div className="logo-text-group">
             <div className="logo-main-row">

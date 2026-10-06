@@ -222,7 +222,7 @@ export default function App() {
       <footer className="evege-footer py-3 border-top mt-auto text-center">
         <div className="container d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-calendar2-star text-primary"></i>
+            <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '22px', height: '22px', borderRadius: '6px' }} />
             <span className="fw-bold">EVEGE</span>
             <span className="text-muted extra-small">&bull; College Event Management System</span>
           </div>
