@@ -468,30 +468,6 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
                 {loading ? 'Creating Account…' : <>Register &rarr;</>}
               </button>
 
-              <div className="text-center my-2 text-muted small">OR</div>
-
-              <button
-                type="button"
-                className="btn btn-outline-google w-100"
-                onClick={() => {
-                  setRegForm({
-                    fullName: 'Sudanshu Pandey',
-                    email: 'sudanshu@gmail.com',
-                    phone: '9876543211',
-                    college: 'Delhi Technological University',
-                    branch: 'Computer Science & Engineering',
-                    rollNumber: '23CSE1042',
-                    yearSemester: '3rd Year (Semester 5 / 6)',
-                    gender: 'Male',
-                    password: 'password123',
-                    confirmPassword: 'password123',
-                    agreed: true
-                  });
-                }}
-              >
-                <i className="bi bi-magic me-2 text-primary"></i> Fill Demo Student Details
-              </button>
-
               <div className="text-center mt-3 small text-muted">
                 Already have an account?{' '}
                 <span
@@ -560,14 +536,6 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
                 disabled={loading}
               >
                 {loading ? 'Logging in…' : 'Sign In as Student'}
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-outline-secondary w-100 mt-2 btn-sm"
-                onClick={() => setLoginForm({ email: 'student@gmail.com', password: '123321' })}
-              >
-                <i className="bi bi-key me-1"></i> Quick Fill Seeded Student (student@gmail.com / 123321)
               </button>
 
               <div className="text-center mt-3 small text-muted">

@@ -32,7 +32,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
-        // 1. Primary Admin account per user requirements: demoadmin@gmail.com / 123321
+        // Primary Admin account per user requirements: demoadmin@gmail.com / 123321
         if (userRepository.findByEmail("demoadmin@gmail.com").isEmpty()) {
             User admin = new User(
                     "Administrator",
@@ -47,40 +47,6 @@ public class DataSeeder implements CommandLineRunner {
                     "ADMIN"
             );
             userRepository.save(admin);
-        }
-
-        // 2. Fallback admin for existing unit tests: admin / admin123
-        if (userRepository.findByEmail("admin").isEmpty()) {
-            User testAdmin = new User(
-                    "System Admin",
-                    "admin",
-                    "+91 9876500000",
-                    "EVEGE Tech",
-                    "Admin",
-                    "SYS001",
-                    "Staff",
-                    "Other",
-                    passwordEncoder.encode("admin123"),
-                    "ADMIN"
-            );
-            userRepository.save(testAdmin);
-        }
-
-        // 3. Demo student account: student@gmail.com / 123321
-        if (userRepository.findByEmail("student@gmail.com").isEmpty()) {
-            User student = new User(
-                    "Sudanshu Pandey",
-                    "student@gmail.com",
-                    "+91 9876543211",
-                    "College of Engineering & Technology",
-                    "Computer Science & Engineering",
-                    "23CSE1042",
-                    "3rd Year / Semester 5",
-                    "Male",
-                    passwordEncoder.encode("123321"),
-                    "STUDENT"
-            );
-            userRepository.save(student);
         }
     }
 

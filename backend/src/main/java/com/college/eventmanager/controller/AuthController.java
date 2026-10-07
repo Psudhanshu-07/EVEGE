@@ -43,18 +43,24 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         String identifier = authRequest.getEmail() != null && !authRequest.getEmail().isBlank()
                 ? authRequest.getEmail().trim()
-                : authRequest.getUsername().trim();
+                : (authRequest.getUsername() != null ? authRequest.getUsername().trim() : "");
+
+        if (identifier.isBlank()) {
+            return ResponseEntity.badRequest().body(new AuthResponse(null, null, null, null, null, "Email is required."));
+        }
+
+        String cleanIdentifier = identifier.toLowerCase();
 
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(identifier, authRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(cleanIdentifier, authRequest.getPassword()));
 
             String token = jwtUtils.generateToken(authentication.getName());
-            Optional<User> userOpt = userRepository.findByEmail(identifier);
+            Optional<User> userOpt = userRepository.findByEmail(cleanIdentifier);
 
             String role = userOpt.map(User::getRole).orElse("STUDENT");
-            String fullName = userOpt.map(User::getFullName).orElse(identifier);
-            String email = userOpt.map(User::getEmail).orElse(identifier);
+            String fullName = userOpt.map(User::getFullName).orElse(cleanIdentifier);
+            String email = userOpt.map(User::getEmail).orElse(cleanIdentifier);
 
             return ResponseEntity.ok(new AuthResponse(
                     token,
@@ -65,10 +71,38 @@ public class AuthController {
                     "Login successful"
             ));
         } catch (AuthenticationException e) {
-            boolean userExists = userRepository.findByEmail(identifier).isPresent();
-            String msg = userExists
+            Optional<User> existingUser = userRepository.findByEmail(cleanIdentifier);
+
+            // If student with valid @gmail.com logs in for the first time, auto-create in PostgreSQL!
+            if (existingUser.isEmpty() && cleanIdentifier.endsWith("@gmail.com") && authRequest.getPassword() != null && authRequest.getPassword().length() >= 4) {
+                User newUser = new User();
+                String namePart = cleanIdentifier.split("@")[0];
+                String derivedName = Character.toUpperCase(namePart.charAt(0)) + (namePart.length() > 1 ? namePart.substring(1) : "");
+                newUser.setFullName(derivedName);
+                newUser.setEmail(cleanIdentifier);
+                newUser.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+                newUser.setRole("STUDENT");
+                newUser.setCollege("College of Engineering");
+                newUser.setBranch("Computer Science");
+                newUser.setRollNumber("");
+                newUser.setYearSemester("1st Year");
+                newUser.setGender("Other");
+                User saved = userRepository.save(newUser);
+
+                String token = jwtUtils.generateToken(saved.getEmail());
+                return ResponseEntity.ok(new AuthResponse(
+                        token,
+                        saved.getEmail(),
+                        saved.getRole(),
+                        saved.getFullName(),
+                        saved.getEmail(),
+                        "Account created and logged in successfully"
+                ));
+            }
+
+            String msg = existingUser.isPresent()
                     ? "Incorrect password. Please try again."
-                    : "No account found with this email (" + identifier + "). Please register first.";
+                    : "No account found with this email (" + cleanIdentifier + "). Please register first.";
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse(null, null, null, null, null, msg));
         }
