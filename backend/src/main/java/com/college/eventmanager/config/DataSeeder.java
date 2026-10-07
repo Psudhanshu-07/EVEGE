@@ -4,6 +4,7 @@ import com.college.eventmanager.model.Event;
 import com.college.eventmanager.model.User;
 import com.college.eventmanager.model.Student;
 import com.college.eventmanager.repository.EventRepository;
+import com.college.eventmanager.repository.RegistrationRepository;
 import com.college.eventmanager.repository.StudentRepository;
 import com.college.eventmanager.repository.StudentAccountRepository;
 import com.college.eventmanager.repository.UserRepository;
@@ -20,6 +21,7 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final StudentAccountRepository studentAccountRepository;
+    private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
     private final AccountSyncService accountSyncService;
     private final PasswordEncoder passwordEncoder;
@@ -27,12 +29,14 @@ public class DataSeeder implements CommandLineRunner {
     public DataSeeder(UserRepository userRepository,
                       StudentRepository studentRepository,
                       StudentAccountRepository studentAccountRepository,
+                      RegistrationRepository registrationRepository,
                       EventRepository eventRepository,
                       AccountSyncService accountSyncService,
                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.studentAccountRepository = studentAccountRepository;
+        this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.accountSyncService = accountSyncService;
         this.passwordEncoder = passwordEncoder;
@@ -41,6 +45,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedUsers();
+        syncAllExistingAccounts();
         seedEvents();
     }
 
@@ -79,6 +84,84 @@ public class DataSeeder implements CommandLineRunner {
                     "ADMIN"
             );
         }
+    }
+
+    private void syncAllExistingAccounts() {
+        // 1. Synchronize from students table into student_accounts & users
+        studentRepository.findAll().forEach(s -> {
+            accountSyncService.syncAccount(
+                    s.getFullName(), s.getEmail(), s.getPhone(), s.getCollege(),
+                    s.getBranch(), s.getRollNumber(), s.getYearSemester(), s.getGender(),
+                    s.getPassword(), "STUDENT"
+            );
+            if (userRepository.findByEmail(s.getEmail()).isEmpty()) {
+                User u = new User();
+                u.setFullName(s.getFullName());
+                u.setEmail(s.getEmail());
+                u.setPhone(s.getPhone());
+                u.setCollege(s.getCollege());
+                u.setBranch(s.getBranch());
+                u.setRollNumber(s.getRollNumber());
+                u.setYearSemester(s.getYearSemester());
+                u.setGender(s.getGender());
+                u.setPassword(s.getPassword());
+                u.setRole("STUDENT");
+                userRepository.save(u);
+            }
+        });
+
+        // 2. Synchronize from users table into student_accounts & students
+        userRepository.findAll().forEach(u -> {
+            accountSyncService.syncAccount(
+                    u.getFullName(), u.getEmail(), u.getPhone(), u.getCollege(),
+                    u.getBranch(), u.getRollNumber(), u.getYearSemester(), u.getGender(),
+                    u.getPassword(), u.getRole()
+            );
+            if (studentRepository.findByEmail(u.getEmail()).isEmpty() && !"ADMIN".equalsIgnoreCase(u.getRole())) {
+                Student s = new Student();
+                s.setFullName(u.getFullName());
+                s.setEmail(u.getEmail());
+                s.setPhone(u.getPhone());
+                s.setCollege(u.getCollege());
+                s.setBranch(u.getBranch());
+                s.setRollNumber(u.getRollNumber());
+                s.setYearSemester(u.getYearSemester());
+                s.setGender(u.getGender());
+                s.setPassword(u.getPassword());
+                studentRepository.save(s);
+            }
+        });
+
+        // 3. Synchronize from registrations table into student_accounts, users, students
+        registrationRepository.findAll().forEach(r -> {
+            if (r.getStudentEmail() != null && !r.getStudentEmail().isBlank()) {
+                String email = r.getStudentEmail().trim().toLowerCase();
+                String name = r.getStudentName() != null && !r.getStudentName().isBlank() ? r.getStudentName().trim() : "Student";
+                accountSyncService.syncAccount(
+                        name, email, "", "College Student", "Engineering",
+                        r.getCollegeId(), "1st Year", "Other", "123321", "STUDENT"
+                );
+                if (userRepository.findByEmail(email).isEmpty()) {
+                    User u = new User();
+                    u.setFullName(name);
+                    u.setEmail(email);
+                    u.setRollNumber(r.getCollegeId());
+                    u.setPassword(passwordEncoder.encode("123321"));
+                    u.setRole("STUDENT");
+                    u.setCollege("College Student");
+                    userRepository.save(u);
+                }
+                if (studentRepository.findByEmail(email).isEmpty()) {
+                    Student s = new Student();
+                    s.setFullName(name);
+                    s.setEmail(email);
+                    s.setRollNumber(r.getCollegeId());
+                    s.setPassword(passwordEncoder.encode("123321"));
+                    s.setCollege("College Student");
+                    studentRepository.save(s);
+                }
+            }
+        });
     }
 
     private void removeLegacyDemoAccounts() {
