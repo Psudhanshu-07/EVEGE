@@ -109,20 +109,41 @@ class CollegeEventManagerApplicationTests {
     }
 
     @Test
+    void registrationPersistsProfileAndLoginIssuesJwt() throws Exception {
+        mvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"fullName":"Asha Rao","email":"asha@gmail.com","phone":"+91 9876543210",
+                             "college":"EVEGE College","branch":"Computer Science","rollNumber":"23CS101",
+                             "yearSemester":"3rd Year","gender":"Female","password":"secret123",
+                             "confirmPassword":"secret123","role":"STUDENT"}
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("asha@gmail.com"))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
+
+        mvc.perform(get("/api/auth/students"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')][0].fullName").value("Asha Rao"))
+                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')][0].phone").value("+91 9876543210"))
+                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')].password").doesNotExist());
+    }
+
+    @Test
     void loginIssuesJwtAndRejectsBadCredentials() throws Exception {
         MvcResult ok = mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"admin\",\"password\":\"admin123\"}"))
+                        .content("{\"email\":\"demoadmin@gmail.com\",\"password\":\"123321\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andReturn();
 
         String token = om.readTree(ok.getResponse().getContentAsString()).get("token").asText();
-        assertThat(jwtUsername(token)).isEqualTo("admin");
+        assertThat(jwtUsername(token)).isEqualTo("demoadmin@gmail.com");
 
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"admin\",\"password\":\"wrong\"}"))
+                        .content("{\"email\":\"demoadmin@gmail.com\",\"password\":\"wrong\"}"))
                 .andExpect(status().isUnauthorized());
     }
 

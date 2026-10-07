@@ -1,6 +1,7 @@
 package com.college.eventmanager.security;
 
 import com.college.eventmanager.repository.UserRepository;
+import com.college.eventmanager.repository.StudentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -69,13 +70,20 @@ public class SecurityConfig {
 
     /** Database-backed UserDetailsService using PostgreSQL users table. */
     @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
+    public UserDetailsService userDetailsService(UserRepository userRepository,
+                                                 StudentRepository studentRepository) {
         return identifier -> userRepository.findByEmail(identifier)
                 .map(u -> User.withUsername(u.getEmail())
                         .password(u.getPassword())
                         .roles(u.getRole() != null ? u.getRole().replace("ROLE_", "") : "STUDENT")
                         .build())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email or username: " + identifier));
+                .orElseGet(() -> studentRepository.findByEmail(identifier)
+                        .map(s -> User.withUsername(s.getEmail())
+                                .password(s.getPassword())
+                                .roles("STUDENT")
+                                .build())
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found with email or username: " + identifier)))
+                ;
     }
 
     @Bean

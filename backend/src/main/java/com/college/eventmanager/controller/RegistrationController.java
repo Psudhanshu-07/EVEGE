@@ -3,10 +3,10 @@ package com.college.eventmanager.controller;
 import com.college.eventmanager.dto.RegistrationRequest;
 import com.college.eventmanager.model.Event;
 import com.college.eventmanager.model.Registration;
-import com.college.eventmanager.model.User;
+import com.college.eventmanager.model.Student;
 import com.college.eventmanager.repository.EventRepository;
 import com.college.eventmanager.repository.RegistrationRepository;
-import com.college.eventmanager.repository.UserRepository;
+import com.college.eventmanager.repository.StudentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,20 +23,19 @@ public class RegistrationController {
 
     private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
     public RegistrationController(RegistrationRepository registrationRepository,
                                   EventRepository eventRepository,
-                                  UserRepository userRepository,
+                                  StudentRepository studentRepository,
                                   PasswordEncoder passwordEncoder) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    /** GET /api/registrations - returns all registrations stored in PostgreSQL. */
     @GetMapping
     public List<Registration> getAllRegistrations(@RequestParam(value = "email", required = false) String email) {
         if (email != null && !email.isBlank()) {
@@ -47,10 +46,6 @@ public class RegistrationController {
         return registrationRepository.findAll();
     }
 
-    /**
-     * POST /api/registrations - registers student for an event.
-     * Auto-generates transaction reference if payment is submitted in mock mode.
-     */
     @PostMapping
     public ResponseEntity<?> createRegistration(@RequestBody RegistrationRequest request) {
         if (request.getEventId() == null) {
@@ -73,34 +68,30 @@ public class RegistrationController {
         registration.setCategory(event.getCategory());
         registration.setAmount(event.getRegistrationFee() != null ? event.getRegistrationFee() : 100.00);
 
-        // Transaction reference: use provided or auto-generate mock UPI ref
         String txn = request.getTransactionRef();
         if (txn == null || txn.isBlank()) {
-            txn = "UPI" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+            txn = "UPI" + System.currentTimeMillis()
+                    + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         }
         registration.setTransactionRef(txn);
-
         registration.setPaymentStatus(request.getPaymentStatus() == null || request.getPaymentStatus().isBlank()
-                ? "PAID"
-                : request.getPaymentStatus());
+                ? "PAID" : request.getPaymentStatus());
         registration.setRegisteredAt(LocalDateTime.now());
 
         Registration saved = registrationRepository.save(registration);
 
-        // Ensure student account is also stored in PostgreSQL `users` table so database manager sees them
         if (request.getStudentEmail() != null && !request.getStudentEmail().isBlank()) {
             String studentEmail = request.getStudentEmail().trim().toLowerCase();
-            if (userRepository.findByEmail(studentEmail).isEmpty()) {
-                User newUser = new User();
-                newUser.setFullName(request.getStudentName() != null && !request.getStudentName().isBlank()
+            if (studentRepository.findByEmail(studentEmail).isEmpty()) {
+                Student student = new Student();
+                student.setFullName(request.getStudentName() != null && !request.getStudentName().isBlank()
                         ? request.getStudentName().trim() : "Student Participant");
-                newUser.setEmail(studentEmail);
-                newUser.setRollNumber(request.getCollegeId() != null && !request.getCollegeId().isBlank()
+                student.setEmail(studentEmail);
+                student.setRollNumber(request.getCollegeId() != null && !request.getCollegeId().isBlank()
                         ? request.getCollegeId().trim() : "COLLEGE-ID");
-                newUser.setPassword(passwordEncoder.encode("123321"));
-                newUser.setRole("STUDENT");
-                newUser.setCollege("College Student");
-                userRepository.save(newUser);
+                student.setPassword(passwordEncoder.encode("event-registration"));
+                student.setCollege("College Student");
+                studentRepository.save(student);
             }
         }
 

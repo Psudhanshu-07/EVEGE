@@ -188,7 +188,7 @@ export default function AdminPanel({ onBackToHome }) {
           <div className="admin-metric-card card border-0 shadow-sm p-3 rounded-3">
             <div className="d-flex justify-content-between align-items-center">
               <div>
-                <span className="text-muted small">Registered Users</span>
+                <span className="text-muted small">Registered Students</span>
                 <h3 className="fw-bold mb-0 text-info">{users.length}</h3>
               </div>
               <div className="metric-icon-box bg-info-subtle text-info">
@@ -216,7 +216,7 @@ export default function AdminPanel({ onBackToHome }) {
             className={`nav-link ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            <i className="bi bi-people-fill me-1"></i> PostgreSQL Users Table ({users.length})
+            <i className="bi bi-people-fill me-1"></i> PostgreSQL Students Table ({users.length})
           </button>
         </li>
         <li className="nav-item">
@@ -308,13 +308,13 @@ export default function AdminPanel({ onBackToHome }) {
         </div>
       )}
 
-      {/* TAB 2: POSTGRESQL USERS TABLE */}
+      {/* TAB 2: POSTGRESQL STUDENTS TABLE */}
       {activeTab === 'users' && (
         <div className="admin-card card border-0 shadow-sm rounded-4 p-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h5 className="fw-bold mb-0">All Users (PostgreSQL Table: <code>users</code>)</h5>
-              <span className="text-muted small">Registered students and administrators stored in database.</span>
+              <h5 className="fw-bold mb-0">Registered Students (PostgreSQL Table: <code>students</code>)</h5>
+              <span className="text-muted small">Student accounts created on the website.</span>
             </div>
             <span className="badge bg-primary">{users.length} Records</span>
           </div>
@@ -553,4 +553,3 @@ export default function AdminPanel({ onBackToHome }) {
     </div>
   );
 }
-

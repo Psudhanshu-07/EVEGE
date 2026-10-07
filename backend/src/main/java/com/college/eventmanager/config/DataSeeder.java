@@ -2,7 +2,9 @@ package com.college.eventmanager.config;
 
 import com.college.eventmanager.model.Event;
 import com.college.eventmanager.model.User;
+import com.college.eventmanager.model.Student;
 import com.college.eventmanager.repository.EventRepository;
+import com.college.eventmanager.repository.StudentRepository;
 import com.college.eventmanager.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,13 +16,16 @@ import java.util.Optional;
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final EventRepository eventRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(UserRepository userRepository,
+                      StudentRepository studentRepository,
                       EventRepository eventRepository,
                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
         this.eventRepository = eventRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -32,6 +37,9 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
+        removeLegacyDemoAccounts();
+        moveLegacyStudentsToStudentTable();
+
         // Primary Admin account per user requirements: demoadmin@gmail.com / 123321
         if (userRepository.findByEmail("demoadmin@gmail.com").isEmpty()) {
             User admin = new User(
@@ -48,6 +56,36 @@ public class DataSeeder implements CommandLineRunner {
             );
             userRepository.save(admin);
         }
+
+    }
+
+    private void moveLegacyStudentsToStudentTable() {
+        userRepository.findAll().stream()
+                .filter(user -> "STUDENT".equalsIgnoreCase(user.getRole()))
+                .forEach(user -> {
+                    if (studentRepository.findByEmail(user.getEmail()).isEmpty()) {
+                        Student student = new Student();
+                        student.setFullName(user.getFullName());
+                        student.setEmail(user.getEmail());
+                        student.setPhone(user.getPhone());
+                        student.setCollege(user.getCollege());
+                        student.setBranch(user.getBranch());
+                        student.setRollNumber(user.getRollNumber());
+                        student.setYearSemester(user.getYearSemester());
+                        student.setGender(user.getGender());
+                        student.setPassword(user.getPassword());
+                        student.setCreatedAt(user.getCreatedAt());
+                        studentRepository.save(student);
+                    }
+                    userRepository.delete(user);
+                });
+    }
+
+    private void removeLegacyDemoAccounts() {
+        // These accounts were seeded by older application versions and are no longer
+        // part of the supported demo data.
+        userRepository.findByEmail("admin").ifPresent(userRepository::delete);
+        userRepository.findByEmail("student@gmail.com").ifPresent(userRepository::delete);
     }
 
     private void seedEvents() {
