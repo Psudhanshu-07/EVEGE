@@ -5,6 +5,7 @@ import {
   deleteEvent,
   fetchRegistrations,
   fetchAllUsers,
+  fetchAllStudentAccounts,
   fetchStats
 } from '../services/apiService';
 
@@ -35,14 +36,14 @@ export default function AdminPanel({ onBackToHome }) {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [eventsRes, usersRes, regsRes, statsRes] = await Promise.all([
+      const [eventsRes, accountsRes, regsRes, statsRes] = await Promise.all([
         fetchEvents(),
-        fetchAllUsers().catch(() => ({ data: [] })),
+        fetchAllStudentAccounts().catch(() => fetchAllUsers()).catch(() => ({ data: [] })),
         fetchRegistrations().catch(() => ({ data: [] })),
         fetchStats().catch(() => ({ data: null }))
       ]);
       setEvents(eventsRes.data || []);
-      setUsers(usersRes.data || []);
+      setUsers(accountsRes.data || []);
       setRegistrations(regsRes.data || []);
       setStats(statsRes.data || null);
     } catch (err) {
@@ -313,8 +314,8 @@ export default function AdminPanel({ onBackToHome }) {
         <div className="admin-card card border-0 shadow-sm rounded-4 p-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h5 className="fw-bold mb-0">Registered Students (PostgreSQL Table: <code>students</code>)</h5>
-              <span className="text-muted small">Student accounts created on the website.</span>
+              <h5 className="fw-bold mb-0">Registered Accounts (PostgreSQL Table: <code>student_accounts</code> &amp; <code>users</code>)</h5>
+              <span className="text-muted small">Student accounts created on the website (stored in PostgreSQL).</span>
             </div>
             <span className="badge bg-primary">{users.length} Records</span>
           </div>

@@ -5,7 +5,9 @@ import com.college.eventmanager.model.User;
 import com.college.eventmanager.model.Student;
 import com.college.eventmanager.repository.EventRepository;
 import com.college.eventmanager.repository.StudentRepository;
+import com.college.eventmanager.repository.StudentAccountRepository;
 import com.college.eventmanager.repository.UserRepository;
+import com.college.eventmanager.service.AccountSyncService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -17,16 +19,22 @@ public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
+    private final StudentAccountRepository studentAccountRepository;
     private final EventRepository eventRepository;
+    private final AccountSyncService accountSyncService;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(UserRepository userRepository,
                       StudentRepository studentRepository,
+                      StudentAccountRepository studentAccountRepository,
                       EventRepository eventRepository,
+                      AccountSyncService accountSyncService,
                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
+        this.studentAccountRepository = studentAccountRepository;
         this.eventRepository = eventRepository;
+        this.accountSyncService = accountSyncService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -38,7 +46,6 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedUsers() {
         removeLegacyDemoAccounts();
-        moveLegacyStudentsToStudentTable();
 
         // Primary Admin account per user requirements: demoadmin@gmail.com / 123321
         if (userRepository.findByEmail("demoadmin@gmail.com").isEmpty()) {
@@ -57,35 +64,28 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(admin);
         }
 
-    }
-
-    private void moveLegacyStudentsToStudentTable() {
-        userRepository.findAll().stream()
-                .filter(user -> "STUDENT".equalsIgnoreCase(user.getRole()))
-                .forEach(user -> {
-                    if (studentRepository.findByEmail(user.getEmail()).isEmpty()) {
-                        Student student = new Student();
-                        student.setFullName(user.getFullName());
-                        student.setEmail(user.getEmail());
-                        student.setPhone(user.getPhone());
-                        student.setCollege(user.getCollege());
-                        student.setBranch(user.getBranch());
-                        student.setRollNumber(user.getRollNumber());
-                        student.setYearSemester(user.getYearSemester());
-                        student.setGender(user.getGender());
-                        student.setPassword(user.getPassword());
-                        student.setCreatedAt(user.getCreatedAt());
-                        studentRepository.save(student);
-                    }
-                    userRepository.delete(user);
-                });
+        // Also ensure admin is synchronized to student_accounts table for visibility
+        if (studentAccountRepository.findByEmail("demoadmin@gmail.com").isEmpty()) {
+            accountSyncService.syncAccount(
+                    "Administrator",
+                    "demoadmin@gmail.com",
+                    "+91 9876543210",
+                    "EVEGE College Central",
+                    "Administration",
+                    "ADM001",
+                    "Staff",
+                    "Other",
+                    "123321",
+                    "ADMIN"
+            );
+        }
     }
 
     private void removeLegacyDemoAccounts() {
-        // These accounts were seeded by older application versions and are no longer
-        // part of the supported demo data.
+        // These legacy mock accounts are removed
         userRepository.findByEmail("admin").ifPresent(userRepository::delete);
-        userRepository.findByEmail("student@gmail.com").ifPresent(userRepository::delete);
+        studentRepository.findByEmail("student@gmail.com").ifPresent(studentRepository::delete);
+        studentAccountRepository.findByEmail("student@gmail.com").ifPresent(studentAccountRepository::delete);
     }
 
     private void seedEvents() {

@@ -4,9 +4,12 @@ import com.college.eventmanager.dto.RegistrationRequest;
 import com.college.eventmanager.model.Event;
 import com.college.eventmanager.model.Registration;
 import com.college.eventmanager.model.Student;
+import com.college.eventmanager.model.User;
 import com.college.eventmanager.repository.EventRepository;
 import com.college.eventmanager.repository.RegistrationRepository;
 import com.college.eventmanager.repository.StudentRepository;
+import com.college.eventmanager.repository.UserRepository;
+import com.college.eventmanager.service.AccountSyncService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,15 +27,21 @@ public class RegistrationController {
     private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
+    private final AccountSyncService accountSyncService;
     private final PasswordEncoder passwordEncoder;
 
     public RegistrationController(RegistrationRepository registrationRepository,
                                   EventRepository eventRepository,
                                   StudentRepository studentRepository,
+                                  UserRepository userRepository,
+                                  AccountSyncService accountSyncService,
                                   PasswordEncoder passwordEncoder) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
+        this.accountSyncService = accountSyncService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -82,17 +91,44 @@ public class RegistrationController {
 
         if (request.getStudentEmail() != null && !request.getStudentEmail().isBlank()) {
             String studentEmail = request.getStudentEmail().trim().toLowerCase();
+            String studentName = request.getStudentName() != null && !request.getStudentName().isBlank()
+                    ? request.getStudentName().trim() : "Student Participant";
+            String rollNum = request.getCollegeId() != null && !request.getCollegeId().isBlank()
+                    ? request.getCollegeId().trim() : "COLLEGE-ID";
+
+            if (userRepository.findByEmail(studentEmail).isEmpty()) {
+                User user = new User();
+                user.setFullName(studentName);
+                user.setEmail(studentEmail);
+                user.setRollNumber(rollNum);
+                user.setPassword(passwordEncoder.encode("123321"));
+                user.setRole("STUDENT");
+                user.setCollege("College Student");
+                userRepository.save(user);
+            }
+
             if (studentRepository.findByEmail(studentEmail).isEmpty()) {
                 Student student = new Student();
-                student.setFullName(request.getStudentName() != null && !request.getStudentName().isBlank()
-                        ? request.getStudentName().trim() : "Student Participant");
+                student.setFullName(studentName);
                 student.setEmail(studentEmail);
-                student.setRollNumber(request.getCollegeId() != null && !request.getCollegeId().isBlank()
-                        ? request.getCollegeId().trim() : "COLLEGE-ID");
-                student.setPassword(passwordEncoder.encode("event-registration"));
+                student.setRollNumber(rollNum);
+                student.setPassword(passwordEncoder.encode("123321"));
                 student.setCollege("College Student");
                 studentRepository.save(student);
             }
+
+            accountSyncService.syncAccount(
+                    studentName,
+                    studentEmail,
+                    "",
+                    "College Student",
+                    "Engineering",
+                    rollNum,
+                    "1st Year",
+                    "Other",
+                    "123321",
+                    "STUDENT"
+            );
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);

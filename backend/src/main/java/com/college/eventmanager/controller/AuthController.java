@@ -5,9 +5,12 @@ import com.college.eventmanager.dto.AuthResponse;
 import com.college.eventmanager.dto.RegisterRequest;
 import com.college.eventmanager.model.User;
 import com.college.eventmanager.model.Student;
+import com.college.eventmanager.model.StudentAccount;
 import com.college.eventmanager.repository.StudentRepository;
+import com.college.eventmanager.repository.StudentAccountRepository;
 import com.college.eventmanager.repository.UserRepository;
 import com.college.eventmanager.security.JwtUtils;
+import com.college.eventmanager.service.AccountSyncService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,17 +32,23 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
+    private final StudentAccountRepository studentAccountRepository;
+    private final AccountSyncService accountSyncService;
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtUtils jwtUtils,
                           UserRepository userRepository,
                           StudentRepository studentRepository,
+                          StudentAccountRepository studentAccountRepository,
+                          AccountSyncService accountSyncService,
                           PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
+        this.studentAccountRepository = studentAccountRepository;
+        this.accountSyncService = accountSyncService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -84,18 +93,35 @@ public class AuthController {
 
             // If student with valid @gmail.com logs in for the first time, auto-create in PostgreSQL!
             if (existingUser.isEmpty() && existingStudent.isEmpty() && cleanIdentifier.endsWith("@gmail.com") && authRequest.getPassword() != null && authRequest.getPassword().length() >= 4) {
-                Student newUser = new Student();
                 String namePart = cleanIdentifier.split("@")[0];
                 String derivedName = Character.toUpperCase(namePart.charAt(0)) + (namePart.length() > 1 ? namePart.substring(1) : "");
-                newUser.setFullName(derivedName);
-                newUser.setEmail(cleanIdentifier);
-                newUser.setPassword(passwordEncoder.encode(authRequest.getPassword()));
-                newUser.setCollege("College of Engineering");
-                newUser.setBranch("Computer Science");
-                newUser.setRollNumber("");
-                newUser.setYearSemester("1st Year");
-                newUser.setGender("Other");
-                Student saved = studentRepository.save(newUser);
+
+                User userEntity = new User();
+                userEntity.setFullName(derivedName);
+                userEntity.setEmail(cleanIdentifier);
+                userEntity.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+                userEntity.setRole("STUDENT");
+                userEntity.setCollege("College of Engineering");
+                userEntity.setBranch("Computer Science");
+                userEntity.setRollNumber("");
+                userEntity.setYearSemester("1st Year");
+                userEntity.setGender("Other");
+                userRepository.save(userEntity);
+
+                Student studentEntity = new Student();
+                studentEntity.setFullName(derivedName);
+                studentEntity.setEmail(cleanIdentifier);
+                studentEntity.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+                studentEntity.setCollege("College of Engineering");
+                studentEntity.setBranch("Computer Science");
+                studentEntity.setRollNumber("");
+                studentEntity.setYearSemester("1st Year");
+                studentEntity.setGender("Other");
+                Student saved = studentRepository.save(studentEntity);
+
+                // Synchronize to student_accounts table and all databases
+                accountSyncService.syncAccount(derivedName, cleanIdentifier, "", "College of Engineering",
+                        "Computer Science", "", "1st Year", "Other", authRequest.getPassword(), "STUDENT");
 
                 String token = jwtUtils.generateToken(saved.getEmail());
                 return ResponseEntity.ok(new AuthResponse(
@@ -167,18 +193,47 @@ public class AuthController {
             ));
         }
 
-        Student user = new Student();
-        user.setFullName(request.getFullName() != null && !request.getFullName().isBlank()
-                ? request.getFullName().trim() : "Student");
-        user.setEmail(email);
-        user.setPhone(request.getPhone());
-        user.setCollege(request.getCollege() != null ? request.getCollege() : "College of Engineering");
-        user.setBranch(request.getBranch() != null ? request.getBranch() : "Computer Science");
-        user.setRollNumber(request.getRollNumber() != null ? request.getRollNumber() : "");
-        user.setYearSemester(request.getYearSemester() != null ? request.getYearSemester() : "1st Year");
-        user.setGender(request.getGender() != null ? request.getGender() : "Other");
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        Student saved = studentRepository.save(user);
+        String safeName = request.getFullName() != null && !request.getFullName().isBlank()
+                ? request.getFullName().trim() : "Student";
+
+        User userEntity = new User();
+        userEntity.setFullName(safeName);
+        userEntity.setEmail(email);
+        userEntity.setPhone(request.getPhone());
+        userEntity.setCollege(request.getCollege() != null ? request.getCollege() : "College of Engineering");
+        userEntity.setBranch(request.getBranch() != null ? request.getBranch() : "Computer Science");
+        userEntity.setRollNumber(request.getRollNumber() != null ? request.getRollNumber() : "");
+        userEntity.setYearSemester(request.getYearSemester() != null ? request.getYearSemester() : "1st Year");
+        userEntity.setGender(request.getGender() != null ? request.getGender() : "Other");
+        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
+        userEntity.setRole("STUDENT");
+        userRepository.save(userEntity);
+
+        Student student = new Student();
+        student.setFullName(safeName);
+        student.setEmail(email);
+        student.setPhone(request.getPhone());
+        student.setCollege(request.getCollege() != null ? request.getCollege() : "College of Engineering");
+        student.setBranch(request.getBranch() != null ? request.getBranch() : "Computer Science");
+        student.setRollNumber(request.getRollNumber() != null ? request.getRollNumber() : "");
+        student.setYearSemester(request.getYearSemester() != null ? request.getYearSemester() : "1st Year");
+        student.setGender(request.getGender() != null ? request.getGender() : "Other");
+        student.setPassword(passwordEncoder.encode(request.getPassword()));
+        Student saved = studentRepository.save(student);
+
+        // Synchronize to student_accounts table and all databases
+        accountSyncService.syncAccount(
+                safeName,
+                email,
+                request.getPhone(),
+                request.getCollege() != null ? request.getCollege() : "College of Engineering",
+                request.getBranch() != null ? request.getBranch() : "Computer Science",
+                request.getRollNumber() != null ? request.getRollNumber() : "",
+                request.getYearSemester() != null ? request.getYearSemester() : "1st Year",
+                request.getGender() != null ? request.getGender() : "Other",
+                request.getPassword(),
+                "STUDENT"
+        );
 
         String token = jwtUtils.generateToken(saved.getEmail());
 
@@ -221,9 +276,15 @@ public class AuthController {
         return list;
     }
 
-    /** GET /api/auth/students - list all registered student accounts. */
+    /** GET /api/auth/students - list all registered student accounts from students table. */
     @GetMapping("/students")
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
+    }
+
+    /** GET /api/auth/student-accounts - list all registered student accounts from new student_accounts table. */
+    @GetMapping("/student-accounts")
+    public List<StudentAccount> getAllStudentAccounts() {
+        return studentAccountRepository.findAll();
     }
 }
