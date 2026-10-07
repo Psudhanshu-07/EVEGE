@@ -6,6 +6,9 @@ import {
   fetchRegistrations,
   fetchAllUsers,
   fetchAllStudentAccounts,
+  debugEmailCheck,
+  deleteUserByEmail,
+  resetAllStudentData,
   fetchStats
 } from '../services/apiService';
 
@@ -17,6 +20,12 @@ export default function AdminPanel({ onBackToHome }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState(null);
+
+  // Email Inspector state
+  const [inspectEmail, setInspectEmail] = useState('');
+  const [inspectResult, setInspectResult] = useState(null);
+  const [inspecting, setInspecting] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Modal state for adding a new event
   const [showAddModal, setShowAddModal] = useState(false);
@@ -88,16 +97,50 @@ export default function AdminPanel({ onBackToHome }) {
     }
   };
 
-  const handleDeleteEvent = async (id, title) => {
-    if (!window.confirm(`Are you sure you want to remove event "${title}"?`)) return;
-
+  const handleInspectEmail = async (e) => {
+    if (e) e.preventDefault();
+    if (!inspectEmail.trim()) return;
+    setInspecting(true);
+    setInspectResult(null);
     try {
-      await deleteEvent(id);
-      setMsg({ type: 'success', text: `Event "${title}" removed from PostgreSQL database.` });
-      setEvents((prev) => prev.filter((e) => e.id !== id));
+      const res = await debugEmailCheck(inspectEmail.trim());
+      setInspectResult(res.data);
+    } catch (err) {
+      setMsg({ type: 'danger', text: 'Error querying email in database.' });
+    } finally {
+      setInspecting(false);
+    }
+  };
+
+  const handleDeleteAccount = async (email) => {
+    if (!window.confirm(`Are you sure you want to completely delete account "${email}" from all PostgreSQL tables?`)) return;
+    setActionLoading(true);
+    try {
+      const res = await deleteUserByEmail(email);
+      setMsg({ type: 'success', text: res.data?.message || `Account ${email} deleted.` });
+      if (inspectResult?.queryEmail === email) {
+        setInspectResult(null);
+      }
       loadData();
     } catch (err) {
-      setMsg({ type: 'danger', text: 'Failed to delete event.' });
+      setMsg({ type: 'danger', text: err?.response?.data?.message || 'Failed to delete account.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResetStudents = async () => {
+    if (!window.confirm('Are you sure you want to wipe all student test data from PostgreSQL? (Admin account demoadmin@gmail.com will be kept safe)')) return;
+    setActionLoading(true);
+    try {
+      const res = await resetAllStudentData();
+      setMsg({ type: 'success', text: res.data?.message || 'All student test data cleared!' });
+      setInspectResult(null);
+      loadData();
+    } catch (err) {
+      setMsg({ type: 'danger', text: 'Failed to reset student data.' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -309,15 +352,99 @@ export default function AdminPanel({ onBackToHome }) {
         </div>
       )}
 
-      {/* TAB 2: POSTGRESQL STUDENTS TABLE */}
+      {/* TAB 2: POSTGRESQL REGISTERED ACCOUNTS TABLE */}
       {activeTab === 'users' && (
         <div className="admin-card card border-0 shadow-sm rounded-4 p-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
               <h5 className="fw-bold mb-0">Registered Accounts (PostgreSQL Table: <code>student_accounts</code> &amp; <code>users</code>)</h5>
-              <span className="text-muted small">Student accounts created on the website (stored in PostgreSQL).</span>
+              <span className="text-muted small">Live student accounts created on the website (stored in PostgreSQL).</span>
             </div>
-            <span className="badge bg-primary">{users.length} Records</span>
+            <div className="d-flex gap-2 align-items-center">
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm px-3"
+                onClick={loadData}
+                disabled={loading}
+              >
+                <i className="bi bi-arrow-clockwise me-1"></i> Refresh
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-danger btn-sm px-3"
+                onClick={handleResetStudents}
+                disabled={actionLoading}
+              >
+                <i className="bi bi-trash3 me-1"></i> Wipe All Student Test Data
+              </button>
+              <span className="badge bg-primary px-3 py-2">{users.length} Records</span>
+            </div>
+          </div>
+
+          {/* Email Inspector / Diagnostic Card */}
+          <div className="card bg-light border-0 p-3 mb-4 rounded-3">
+            <h6 className="fw-bold mb-2 text-dark">
+              <i className="bi bi-search me-1 text-primary"></i> Email Inspector &amp; Account Debugger
+            </h6>
+            <p className="text-muted small mb-2">
+              If an email is showing "already exists" on the website or you want to check where it is stored in PostgreSQL, enter it below:
+            </p>
+            <form onSubmit={handleInspectEmail} className="d-flex gap-2">
+              <input
+                type="email"
+                className="form-control form-control-sm"
+                placeholder="Enter email to check (e.g. yourname@gmail.com)"
+                value={inspectEmail}
+                onChange={(e) => setInspectEmail(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm px-3 text-nowrap"
+                disabled={inspecting}
+              >
+                {inspecting ? 'Checking…' : <><i className="bi bi-search me-1"></i> Check in Database</>}
+              </button>
+            </form>
+
+            {inspectResult && (
+              <div className="mt-3 p-3 bg-white border rounded-3 shadow-sm small">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <strong className="text-dark">Inspection Result for <code>{inspectResult.queryEmail}</code>:</strong>
+                  {inspectResult.existsOverall && inspectResult.queryEmail !== 'demoadmin@gmail.com' && (
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm py-1 px-3 fw-bold"
+                      onClick={() => handleDeleteAccount(inspectResult.queryEmail)}
+                      disabled={actionLoading}
+                    >
+                      <i className="bi bi-trash3 me-1"></i> Delete This Email From All Tables
+                    </button>
+                  )}
+                </div>
+
+                <div className="row g-2">
+                  <div className="col-12 col-md-4">
+                    <div className={`p-2 rounded border ${inspectResult.foundIn_student_accounts ? 'border-success bg-success-subtle' : 'border-secondary bg-light'}`}>
+                      <strong>Table <code>student_accounts</code>:</strong>
+                      <div>{inspectResult.foundIn_student_accounts ? `✅ Found (ID #${inspectResult.foundIn_student_accounts.id}, Pass: ${inspectResult.foundIn_student_accounts.password})` : '❌ Not Found'}</div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <div className={`p-2 rounded border ${inspectResult.foundIn_users ? 'border-success bg-success-subtle' : 'border-secondary bg-light'}`}>
+                      <strong>Table <code>users</code>:</strong>
+                      <div>{inspectResult.foundIn_users ? `✅ Found (Role: ${inspectResult.foundIn_users.role})` : '❌ Not Found'}</div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <div className={`p-2 rounded border ${inspectResult.foundIn_students ? 'border-success bg-success-subtle' : 'border-secondary bg-light'}`}>
+                      <strong>Table <code>students</code>:</strong>
+                      <div>{inspectResult.foundIn_students ? `✅ Found (Name: ${inspectResult.foundIn_students.name})` : '❌ Not Found'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="table-responsive">
@@ -327,17 +454,19 @@ export default function AdminPanel({ onBackToHome }) {
                   <th>ID</th>
                   <th>Full Name</th>
                   <th>Email</th>
-                  <th>Phone</th>
+                  <th>Password</th>
                   <th>Role</th>
+                  <th>Phone</th>
                   <th>Branch</th>
                   <th>Roll No</th>
                   <th>College</th>
+                  <th className="text-end">Action</th>
                 </tr>
               </thead>
               <tbody className="small">
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-muted">
+                    <td colSpan="10" className="text-center py-4 text-muted">
                       No user accounts found.
                     </td>
                   </tr>
@@ -349,15 +478,35 @@ export default function AdminPanel({ onBackToHome }) {
                       <td>
                         <code>{u.email}</code>
                       </td>
-                      <td>{u.phone || '-'}</td>
                       <td>
-                        <span className={`badge ${u.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}`}>
-                          {u.role}
+                        <span className="badge bg-light text-dark border font-monospace">
+                          {u.password || '••••••••'}
                         </span>
                       </td>
+                      <td>
+                        <span className={`badge ${u.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}`}>
+                          {u.role || 'STUDENT'}
+                        </span>
+                      </td>
+                      <td>{u.phone || '-'}</td>
                       <td>{u.branch || '-'}</td>
                       <td>{u.rollNumber || '-'}</td>
                       <td className="text-muted extra-small">{u.college || '-'}</td>
+                      <td className="text-end">
+                        {u.email !== 'demoadmin@gmail.com' ? (
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger btn-sm py-1 px-2"
+                            onClick={() => handleDeleteAccount(u.email)}
+                            disabled={actionLoading}
+                            title="Delete this account from database"
+                          >
+                            <i className="bi bi-trash3"></i>
+                          </button>
+                        ) : (
+                          <span className="badge bg-secondary">System Admin</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}

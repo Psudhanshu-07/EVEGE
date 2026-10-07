@@ -9,10 +9,12 @@ import com.college.eventmanager.model.StudentAccount;
 import com.college.eventmanager.repository.StudentRepository;
 import com.college.eventmanager.repository.StudentAccountRepository;
 import com.college.eventmanager.repository.UserRepository;
+import com.college.eventmanager.repository.RegistrationRepository;
 import com.college.eventmanager.security.JwtUtils;
 import com.college.eventmanager.service.AccountSyncService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,7 +36,9 @@ public class AuthController {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final StudentAccountRepository studentAccountRepository;
+    private final RegistrationRepository registrationRepository;
     private final AccountSyncService accountSyncService;
+    private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(AuthenticationManager authenticationManager,
@@ -41,14 +46,18 @@ public class AuthController {
                           UserRepository userRepository,
                           StudentRepository studentRepository,
                           StudentAccountRepository studentAccountRepository,
+                          RegistrationRepository registrationRepository,
                           AccountSyncService accountSyncService,
+                          JdbcTemplate jdbcTemplate,
                           PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.studentAccountRepository = studentAccountRepository;
+        this.registrationRepository = registrationRepository;
         this.accountSyncService = accountSyncService;
+        this.jdbcTemplate = jdbcTemplate;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -286,5 +295,85 @@ public class AuthController {
     @GetMapping("/student-accounts")
     public List<StudentAccount> getAllStudentAccounts() {
         return studentAccountRepository.findAll();
+    }
+
+    /**
+     * GET /api/auth/debug-email?email=...
+     * Inspects every table in PostgreSQL to find exactly where this email exists.
+     */
+    @GetMapping("/debug-email")
+    public ResponseEntity<?> debugEmail(@RequestParam("email") String email) {
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email query param required"));
+        }
+        String cleanEmail = email.trim().toLowerCase();
+        Map<String, Object> result = new HashMap<>();
+        result.put("queryEmail", cleanEmail);
+
+        Optional<User> inUsers = userRepository.findByEmail(cleanEmail);
+        result.put("foundIn_users", inUsers.map(u -> Map.of("id", u.getId(), "name", u.getFullName(), "role", u.getRole())).orElse(null));
+
+        Optional<Student> inStudents = studentRepository.findByEmail(cleanEmail);
+        result.put("foundIn_students", inStudents.map(s -> Map.of("id", s.getId(), "name", s.getFullName(), "college", s.getCollege())).orElse(null));
+
+        Optional<StudentAccount> inAccounts = studentAccountRepository.findByEmail(cleanEmail);
+        result.put("foundIn_student_accounts", inAccounts.map(a -> Map.of("id", a.getId(), "name", a.getFullName(), "password", a.getPassword())).orElse(null));
+
+        long regCount = registrationRepository.findAll().stream()
+                .filter(r -> cleanEmail.equalsIgnoreCase(r.getStudentEmail()))
+                .count();
+        result.put("foundIn_registrations_count", regCount);
+
+        boolean overallExists = inUsers.isPresent() || inStudents.isPresent() || inAccounts.isPresent() || regCount > 0;
+        result.put("existsOverall", overallExists);
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * DELETE /api/auth/delete-user?email=...
+     * Allows deleting a test or stuck user account from all tables so they can register fresh.
+     */
+    @DeleteMapping("/delete-user")
+    public ResponseEntity<?> deleteUser(@RequestParam("email") String email) {
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email query param required"));
+        }
+        String cleanEmail = email.trim().toLowerCase();
+        if ("demoadmin@gmail.com".equalsIgnoreCase(cleanEmail)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Cannot delete primary demo admin account"));
+        }
+
+        userRepository.findByEmail(cleanEmail).ifPresent(userRepository::delete);
+        studentRepository.findByEmail(cleanEmail).ifPresent(studentRepository::delete);
+        studentAccountRepository.findByEmail(cleanEmail).ifPresent(studentAccountRepository::delete);
+
+        try {
+            jdbcTemplate.update("DELETE FROM user_accounts WHERE email = ?", cleanEmail);
+        } catch (Exception ignored) {}
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Account for " + cleanEmail + " was completely removed from all PostgreSQL tables."
+        ));
+    }
+
+    /**
+     * POST /api/auth/reset-students
+     * Clears all student test accounts while preserving demoadmin@gmail.com.
+     */
+    @PostMapping("/reset-students")
+    public ResponseEntity<?> resetStudents() {
+        try {
+            jdbcTemplate.update("DELETE FROM registrations");
+            jdbcTemplate.update("DELETE FROM student_accounts WHERE email != 'demoadmin@gmail.com'");
+            jdbcTemplate.update("DELETE FROM user_accounts WHERE email != 'demoadmin@gmail.com'");
+            jdbcTemplate.update("DELETE FROM students WHERE email != 'demoadmin@gmail.com'");
+            jdbcTemplate.update("DELETE FROM users WHERE email != 'demoadmin@gmail.com'");
+            return ResponseEntity.ok(Map.of("success", true, "message", "All student test data cleared. Admin account preserved."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

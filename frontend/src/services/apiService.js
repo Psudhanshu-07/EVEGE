@@ -25,6 +25,9 @@ export const checkEmailExists = (email) => http.get(`/auth/check-email?email=${e
 export const fetchCurrentUser = () => http.get('/auth/me');
 export const fetchAllUsers = () => http.get('/auth/students');
 export const fetchAllStudentAccounts = () => http.get('/auth/student-accounts');
+export const debugEmailCheck = (email) => http.get(`/auth/debug-email?email=${encodeURIComponent(email)}`);
+export const deleteUserByEmail = (email) => http.delete(`/auth/delete-user?email=${encodeURIComponent(email)}`);
+export const resetAllStudentData = () => http.post('/auth/reset-students');
 
 // Event endpoints
 export const fetchEvents = () => http.get('/events');
