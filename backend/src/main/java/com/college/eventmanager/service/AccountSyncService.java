@@ -127,7 +127,13 @@ public class AccountSyncService {
     private void syncToDatabase(String dbName, String fullName, String email, String phone,
                                 String college, String branch, String rollNumber,
                                 String yearSemester, String gender, String password, String role) {
+        // In Render cloud, skip localhost sync as all tables live in the attached cloud database
+        if (System.getenv("RENDER") != null || System.getenv("RENDER_SERVICE_ID") != null) {
+            return;
+        }
+
         String url = "jdbc:postgresql://localhost:5432/" + dbName;
+        DriverManager.setLoginTimeout(2);
         try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
             String[] targetTables = {"student_accounts", "user_accounts", "students"};
             for (String table : targetTables) {
