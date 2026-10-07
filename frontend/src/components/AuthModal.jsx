@@ -48,8 +48,8 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
     setError('');
 
     const email = regForm.email.trim();
-    if (!email.toLowerCase().endsWith('@email.com')) {
-      setError('Email address must end with @email.com (e.g., student@email.com)');
+    if (!email.toLowerCase().endsWith('@gmail.com')) {
+      setError('Email address must end with @gmail.com (e.g., student@gmail.com)');
       return;
     }
 
@@ -96,8 +96,8 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
     setError('');
 
     const email = loginForm.email.trim();
-    if (!email.toLowerCase().endsWith('@email.com')) {
-      setError('Student email must end with @email.com (e.g. student@email.com)');
+    if (!email.toLowerCase().endsWith('@gmail.com')) {
+      setError('Student email must end with @gmail.com (e.g. student@gmail.com)');
       return;
     }
 
@@ -215,7 +215,7 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label className="auth-label">Email Address (@email.com) *</label>
+                  <label className="auth-label">Email Address (@gmail.com) *</label>
                   <div className="auth-input-group">
                     <i className="bi bi-envelope"></i>
                     <input
@@ -223,11 +223,11 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
                       type="email"
                       value={regForm.email}
                       onChange={handleRegChange}
-                      placeholder="name@email.com"
+                      placeholder="name@gmail.com"
                       required
                     />
                   </div>
-                  <div className="field-hint">Must end with @email.com</div>
+                  <div className="field-hint">Must end with @gmail.com</div>
                 </div>
 
                 <div className="col-12 col-md-6">
@@ -406,7 +406,7 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
                 onClick={() => {
                   setRegForm({
                     fullName: 'Sudanshu Pandey',
-                    email: 'sudanshu@email.com',
+                    email: 'sudanshu@gmail.com',
                     phone: '9876543211',
                     college: 'Delhi Technological University',
                     branch: 'Computer Science & Engineering',
@@ -449,18 +449,18 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
 
             <form onSubmit={handleStudentLoginSubmit}>
               <div className="mb-3">
-                <label className="auth-label">Student Email (@email.com) *</label>
+                <label className="auth-label">Student Email (@gmail.com) *</label>
                 <div className="auth-input-group">
                   <i className="bi bi-envelope"></i>
                   <input
                     type="email"
                     value={loginForm.email}
                     onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                    placeholder="student@email.com"
+                    placeholder="student@gmail.com"
                     required
                   />
                 </div>
-                <div className="field-hint">Must end with @email.com</div>
+                <div className="field-hint">Must end with @gmail.com</div>
               </div>
 
               <div className="mb-3">
@@ -495,9 +495,9 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
               <button
                 type="button"
                 className="btn btn-outline-secondary w-100 mt-2 btn-sm"
-                onClick={() => setLoginForm({ email: 'student@email.com', password: '123321' })}
+                onClick={() => setLoginForm({ email: 'student@gmail.com', password: '123321' })}
               >
-                <i className="bi bi-key me-1"></i> Quick Fill Seeded Student (student@email.com / 123321)
+                <i className="bi bi-key me-1"></i> Quick Fill Seeded Student (student@gmail.com / 123321)
               </button>
 
               <div className="text-center mt-3 small text-muted">

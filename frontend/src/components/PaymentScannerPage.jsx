@@ -13,7 +13,7 @@ export default function PaymentScannerPage({
     currentUser?.fullName || 'Sudanshu Pandey'
   );
   const [participantEmail, setParticipantEmail] = useState(
-    currentUser?.email || 'student@email.com'
+    currentUser?.email || 'student@gmail.com'
   );
   const [collegeId, setCollegeId] = useState('23CSE1042');
   const [phone, setPhone] = useState(currentUser?.phone || '9876543211');
@@ -420,13 +420,13 @@ export default function PaymentScannerPage({
                     />
                   </div>
                   <div className="col-12 col-md-6">
-                    <label className="form-label small fw-semibold mb-1">Email (@email.com)</label>
+                    <label className="form-label small fw-semibold mb-1">Email (@gmail.com)</label>
                     <input
                       type="email"
                       className="form-control form-control-sm"
                       value={participantEmail}
                       onChange={(e) => setParticipantEmail(e.target.value)}
-                      placeholder="student@email.com"
+                      placeholder="student@gmail.com"
                       required
                     />
                   </div>

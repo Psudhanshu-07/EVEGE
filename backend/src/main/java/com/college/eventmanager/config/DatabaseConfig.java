@@ -21,7 +21,7 @@ public class DatabaseConfig {
         String targetUrl = properties.getUrl();
 
         // If system env DATABASE_URL is set (e.g. Render PostgreSQL), use it if needed
-        if ((targetUrl == null || targetUrl.isBlank() || targetUrl.contains("localhost:5433")) && envDbUrl != null && !envDbUrl.isBlank()) {
+        if ((targetUrl == null || targetUrl.isBlank() || targetUrl.contains("localhost:5432") || targetUrl.contains("localhost:5433")) && envDbUrl != null && !envDbUrl.isBlank()) {
             targetUrl = envDbUrl;
         }
 

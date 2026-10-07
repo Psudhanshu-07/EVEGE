@@ -66,11 +66,11 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(testAdmin);
         }
 
-        // 3. Demo student account: student@email.com / 123321
-        if (userRepository.findByEmail("student@email.com").isEmpty()) {
+        // 3. Demo student account: student@gmail.com / 123321
+        if (userRepository.findByEmail("student@gmail.com").isEmpty()) {
             User student = new User(
                     "Sudanshu Pandey",
-                    "student@email.com",
+                    "student@gmail.com",
                     "+91 9876543211",
                     "College of Engineering & Technology",
                     "Computer Science & Engineering",

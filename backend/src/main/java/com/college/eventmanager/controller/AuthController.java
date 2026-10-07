@@ -72,7 +72,7 @@ public class AuthController {
 
     /**
      * POST /api/auth/register - registers student account in PostgreSQL.
-     * Validates that student emails end with @email.com.
+     * Validates that student emails end with @gmail.com.
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -82,10 +82,10 @@ public class AuthController {
 
         String email = request.getEmail().trim().toLowerCase();
 
-        // Enforce requirement: student email must end with @email.com
-        if (!email.endsWith("@email.com")) {
+        // Enforce requirement: student email must end with @gmail.com
+        if (!email.endsWith("@gmail.com")) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "message", "Email address must end with @email.com (e.g. student@email.com)"
+                    "message", "Email address must end with @gmail.com (e.g. student@gmail.com)"
             ));
         }
 
