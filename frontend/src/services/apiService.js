@@ -21,6 +21,7 @@ http.interceptors.request.use((config) => {
 // Auth endpoints
 export const login = (credentials) => http.post('/auth/login', credentials);
 export const registerUser = (userData) => http.post('/auth/register', userData);
+export const checkEmailExists = (email) => http.get(`/auth/check-email?email=${encodeURIComponent(email)}`);
 export const fetchCurrentUser = () => http.get('/auth/me');
 export const fetchAllUsers = () => http.get('/auth/users');
 

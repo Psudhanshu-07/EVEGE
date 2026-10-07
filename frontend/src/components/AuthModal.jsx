@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { login, registerUser } from '../services/apiService';
+import { login, registerUser, checkEmailExists } from '../services/apiService';
 
 export default function AuthModal({ show, initialMode = 'student-register', onClose, onLoginSuccess }) {
   const [mode, setMode] = useState(initialMode); // 'student-register', 'student-login', 'admin-login'
   const [error, setError] = useState('');
+  const [existingUserPrompt, setExistingUserPrompt] = useState(null); // { email, message }
   const [loading, setLoading] = useState(false);
 
   // Form states
@@ -41,6 +42,25 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  const handleEmailBlur = async () => {
+    const email = regForm.email.trim();
+    if (email.toLowerCase().endsWith('@gmail.com')) {
+      try {
+        const res = await checkEmailExists(email);
+        if (res.data?.exists) {
+          setExistingUserPrompt({
+            email: email,
+            message: `Account already exists for ${email}! Please sign in instead.`
+          });
+        } else {
+          setExistingUserPrompt(null);
+        }
+      } catch {
+        // ignore network error
+      }
+    }
   };
 
   const handleRegisterSubmit = async (e) => {
@@ -85,7 +105,17 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
       onLoginSuccess(userObj, 'student');
       onClose();
     } catch (err) {
-      setError(err?.response?.data?.message || 'Registration failed. Please check your details.');
+      const errMsg = err?.response?.data?.message || 'Registration failed. Please check your details.';
+      if (err?.response?.data?.code === 'USER_ALREADY_EXISTS' || errMsg.toLowerCase().includes('already exists')) {
+        setExistingUserPrompt({
+          email: email,
+          message: `An account with ${email} is already registered in the database. Please log in with your password.`
+        });
+        setError('This email is already registered. Please log in instead.');
+        setLoginForm((prev) => ({ ...prev, email }));
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -179,10 +209,49 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
           </button>
         </div>
 
+        {existingUserPrompt && (
+          <div className="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-3 rounded-3 shadow-sm border border-warning">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-person-check-fill text-warning fs-4"></i>
+              <div>
+                <strong className="d-block small text-dark">Account Already Exists</strong>
+                <span className="extra-small text-muted">{existingUserPrompt.message}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-warning btn-sm fw-bold px-3 shadow-sm text-nowrap ms-2"
+              onClick={() => {
+                setLoginForm((prev) => ({ ...prev, email: existingUserPrompt.email }));
+                setMode('student-login');
+                setError('');
+                setExistingUserPrompt(null);
+              }}
+            >
+              Sign In Now &rarr;
+            </button>
+          </div>
+        )}
+
         {error && (
           <div className="auth-alert mb-3">
             <i className="bi bi-exclamation-circle-fill me-2"></i>
-            <span>{error}</span>
+            <div>
+              <div>{error}</div>
+              {typeof error === 'string' && error.includes('No account found') && (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm px-3 mt-2 fw-bold"
+                  onClick={() => {
+                    setRegForm((prev) => ({ ...prev, email: loginForm.email }));
+                    setMode('student-register');
+                    setError('');
+                  }}
+                >
+                  Create Account Now &rarr;
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -223,6 +292,7 @@ export default function AuthModal({ show, initialMode = 'student-register', onCl
                       type="email"
                       value={regForm.email}
                       onChange={handleRegChange}
+                      onBlur={handleEmailBlur}
                       placeholder="name@gmail.com"
                       required
                     />

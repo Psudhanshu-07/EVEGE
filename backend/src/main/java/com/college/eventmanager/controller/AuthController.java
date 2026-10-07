@@ -65,9 +65,31 @@ public class AuthController {
                     "Login successful"
             ));
         } catch (AuthenticationException e) {
+            boolean userExists = userRepository.findByEmail(identifier).isPresent();
+            String msg = userExists
+                    ? "Incorrect password. Please try again."
+                    : "No account found with this email (" + identifier + "). Please register first.";
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(null, null, null, null, null, "Invalid email or password"));
+                    .body(new AuthResponse(null, null, null, null, null, msg));
         }
+    }
+
+    /**
+     * GET /api/auth/check-email?email=...
+     * Checks if email is already registered in PostgreSQL.
+     */
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam("email") String email) {
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.ok(Map.of("exists", false));
+        }
+        String cleanEmail = email.trim().toLowerCase();
+        boolean exists = userRepository.existsByEmail(cleanEmail);
+        return ResponseEntity.ok(Map.of(
+                "exists", exists,
+                "email", cleanEmail,
+                "message", exists ? "An account with this email already exists. Please log in." : "Email is available."
+        ));
     }
 
     /**
@@ -91,7 +113,9 @@ public class AuthController {
 
         if (userRepository.existsByEmail(email)) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "message", "An account with email " + email + " already exists."
+                    "message", "An account with email " + email + " already exists. Please log in instead.",
+                    "code", "USER_ALREADY_EXISTS",
+                    "email", email
             ));
         }
 
