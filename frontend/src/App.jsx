@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import Navbar from './components/Navbar';
+import MagazineNavbar from './components/MagazineNavbar';
 import HeroSection from './components/HeroSection';
 import StoryStrip from './components/StoryStrip';
 import GallerySection from './components/GallerySection';
-import CategorySection from './components/CategorySection';
+import MagazineEvents from './components/MagazineEvents';
 import PaymentScannerPage from './components/PaymentScannerPage';
 import AdminPanel from './components/AdminPanel';
 import MyRegistrations from './components/MyRegistrations';
@@ -129,14 +129,7 @@ export default function App() {
   return (
     <div className="evege-app-root d-flex flex-column min-vh-100">
       {/* Navbar */}
-      <Navbar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        currentUser={currentUser}
-        onOpenAuth={handleOpenAuth}
-        onLogout={handleLogout}
-        registrationCount={registrations.length}
-      />
+      <MagazineNavbar currentView={currentView} setCurrentView={setCurrentView} currentUser={currentUser} onOpenAuth={handleOpenAuth} onLogout={handleLogout} />
 
       {/* Main Page Content */}
       <main className="container-fluid px-4 flex-grow-1 page-main-shell">
@@ -213,30 +206,18 @@ export default function App() {
 
             {currentView === 'home' && <StoryStrip />}
 
-            <div id="category-section-anchor">
-              <CategorySection
-                events={events}
-                onSelectEventForRegistration={handleSelectEventForRegistration}
-              />
-            </div>
+            <MagazineEvents events={events} onRegister={handleSelectEventForRegistration} />
             {currentView === 'home' && <GallerySection events={events} />}
           </>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="evege-footer py-3 border-top mt-auto text-center">
-        <div className="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div className="d-flex align-items-center gap-2">
-            <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '22px', height: '22px', borderRadius: '6px' }} />
-            <span className="fw-bold">EVEGE</span>
-            <span className="text-muted extra-small">&bull; College Event Management System</span>
-          </div>
-          <div className="text-muted extra-small">
-            Connected to PostgreSQL &bull; Spring Boot 3 Backend
-          </div>
-          <div className="cursive-tagline extra-small">More Events. More Connections.</div>
-        </div>
+      <footer className="site-footer" id="contact">
+        <a className="footer-brand" href="#home">TSDCEM</a>
+        <p>Making campus moments happen.</p>
+        <p>Questions? Reach out to your student event coordinator.</p>
+        <span>&copy; 2026 TSDCEM College Magazine</span>
       </footer>
 
       {/* Auth Modal (Register / Login / Admin) */}
