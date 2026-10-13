@@ -26,7 +26,6 @@ export default function MagazineNavbar({ currentView, setCurrentView, currentUse
             alt="TSDCEM Logo"
             className="brand-crest-img"
           />
-          <span className="brand-mark" aria-hidden="true">T</span>
           <span className="brand-copy">
             <strong>TSDCEM</strong>
             <small>COLLEGE MAGAZINE</small>
