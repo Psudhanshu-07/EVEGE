@@ -1,115 +1,83 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
-export default function HeroSection({ onExplore, onOpenRegister }) {
-  return (
-    <div className="evege-hero-container my-3 rounded-4 overflow-hidden shadow-sm">
-      <div className="row g-0 align-items-stretch">
-        {/* Left Dark Hero Section (matching reference image) */}
-        <div className="col-12 col-lg-7 p-4 p-md-5 hero-dark-panel d-flex flex-column justify-content-between">
-          <div>
-            {/* Top Brand Header */}
-            <div className="d-flex align-items-center gap-3 mb-4">
-              <div className="hero-logo-box p-0 bg-transparent border-0 shadow-none">
-                <img src="/logo.svg" alt="EVEGE Logo" style={{ width: '44px', height: '44px', borderRadius: '11px' }} />
-              </div>
-              <div>
-                <div className="hero-brand-name fw-bold text-white fs-3 lh-1">EVEGE</div>
-                <div className="hero-brand-sub text-white-50 extra-small">EVENTS &bull; PEOPLE &bull; MEMORIES</div>
-              </div>
-              <div className="ms-auto d-none d-sm-block text-white-50 small border-start ps-3 border-secondary">
-                Your College Events,<br />All in One Place.
-              </div>
-            </div>
+const descriptions = {
+  Cricket: 'Cheer on your college teams at a lively match on the ground.',
+  Football: 'Get together for an exciting match on the sports field.',
+  'Code Challenge': 'Take on coding challenges and show off your problem-solving skills.',
+  Robotics: 'Explore creative builds and hands-on engineering projects.',
+  'Dance Competition': 'Celebrate student talent with music, dance and performances.',
+  'Singing Competition': 'Enjoy live performances from talented student singers.'
+};
 
-            {/* Main Headline */}
-            <h1 className="hero-title text-white fw-bold mb-3 display-5">
-              Plan. Manage.<br />
-              <span className="text-primary-gradient">Experience.</span>
-            </h1>
-
-            <p className="hero-subtitle text-white-50 fs-6 mb-4" style={{ maxWidth: '480px' }}>
-              A simple platform to discover, register and manage college events.
-            </p>
-
-            {/* 3 Value Proposition Bullets */}
-            <div className="hero-feature-list d-flex flex-column gap-3 mb-4">
-              <div className="d-flex align-items-start gap-3">
-                <div className="feature-icon-circle">
-                  <i className="bi bi-calendar2-week"></i>
-                </div>
-                <div>
-                  <div className="text-white fw-bold small">Discover Events</div>
-                  <div className="text-white-50 extra-small">Explore exciting events happening on campus.</div>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-start gap-3">
-                <div className="feature-icon-circle">
-                  <i className="bi bi-people"></i>
-                </div>
-                <div>
-                  <div className="text-white fw-bold small">Register Easily</div>
-                  <div className="text-white-50 extra-small">Sign up for your favourite events in just a few clicks.</div>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-start gap-3">
-                <div className="feature-icon-circle">
-                  <i className="bi bi-star"></i>
-                </div>
-                <div>
-                  <div className="text-white fw-bold small">Stay Updated</div>
-                  <div className="text-white-50 extra-small">Get the latest updates, notifications and reminders.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Cursive Quote */}
-          <div className="hero-bottom-tag mt-3 d-flex justify-content-between align-items-center">
-            <span className="cursive-tagline">More Events. More Connections.</span>
-            <button type="button" className="btn btn-primary btn-sm px-3 shadow" onClick={onExplore}>
-              Explore Events &rarr;
-            </button>
-          </div>
-        </div>
-
-        {/* Right Preview Card / Banner */}
-        <div className="col-12 col-lg-5 p-4 p-md-5 hero-light-panel d-flex flex-column justify-content-center bg-white">
-          <div className="quick-access-box p-4 rounded-4 shadow-sm border text-center">
-            <div className="quick-avatar-badge mx-auto mb-3">
-              <i className="bi bi-mortarboard-fill text-primary fs-2"></i>
-            </div>
-            <h4 className="fw-bold mb-1">Campus Event Portal</h4>
-            <p className="text-muted small mb-4">
-              Discover running Technical fests, Sports leagues, and Cultural celebrations.
-            </p>
-
-            <div className="d-grid gap-2 mb-3">
-              <button
-                type="button"
-                className="btn btn-primary fw-bold py-2 shadow-sm"
-                onClick={onOpenRegister}
-              >
-                <i className="bi bi-person-plus me-1"></i> Create Student Account &rarr;
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-primary py-2"
-                onClick={onExplore}
-              >
-                <i className="bi bi-grid me-1"></i> Browse Categories &amp; Events
-              </button>
-            </div>
-
-            <div className="security-notice small text-muted">
-              <i className="bi bi-database-check text-success me-1"></i>
-              PostgreSQL Database Sync Enabled
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function formatDate(value, longMonth = false) {
+  if (!value) return 'Date to be announced';
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(undefined, {
+    day: 'numeric',
+    month: longMonth ? 'long' : 'short',
+    year: 'numeric'
+  }).format(date);
 }
 
+export default function HeroSection({ events = [], onExplore, onOpenRegister }) {
+  const featuredEvent = useMemo(() => (
+    [...events].sort((a, b) => String(a.eventDate || '').localeCompare(String(b.eventDate || '')))[0]
+  ), [events]);
+  const categories = useMemo(
+    () => new Set(events.map((event) => event.category).filter(Boolean)).size,
+    [events]
+  );
+
+  return (
+    <section className="enhanced-hero" aria-labelledby="hero-title">
+      <div className="enhanced-hero-content">
+        <p className="hero-eyebrow">EVEGE &bull; COLLEGE EVENT PORTAL</p>
+        <div className="portal-icon" aria-hidden="true"><i className="bi bi-mortarboard-fill"></i></div>
+        <h1 id="hero-title">Campus stories in motion.</h1>
+        <p className="enhanced-hero-copy">
+          Experience the energy of campus through technical events, cultural celebrations,
+          sports moments and the connections that shape student life.
+        </p>
+        <div className="hero-actions">
+          <button type="button" className="enhanced-primary-action" onClick={onOpenRegister}>
+            Join the campus community <span aria-hidden="true">&rarr;</span>
+          </button>
+          <button type="button" className="enhanced-secondary-action" onClick={onExplore}>
+            Explore events
+          </button>
+        </div>
+        <div className="hero-metrics" aria-label="Upcoming event summary">
+          <div><strong>{events.length}</strong><span>Upcoming events</span></div>
+          <div><strong>{categories}</strong><span>Categories</span></div>
+          <div><strong>{featuredEvent ? formatDate(featuredEvent.eventDate) : '—'}</strong><span>Next date</span></div>
+        </div>
+        <p className="database-status connected">
+          <i className="bi bi-arrow-repeat me-1"></i> Live event pool updates from the backend
+        </p>
+      </div>
+
+      <div className="hero-panel" aria-live="polite" aria-label="Featured event details">
+        <div className="hero-panel-main">
+          <span className="hero-panel-tag">Featured event</span>
+          <h2>{featuredEvent?.title || featuredEvent?.name || 'No upcoming events'}</h2>
+          <p>
+            {featuredEvent
+              ? (featuredEvent.description || descriptions[featuredEvent.title || featuredEvent.name]
+                || `Join us for this ${featuredEvent.category?.toLowerCase() || 'campus'} event.`)
+              : 'Check back later for the next campus event listing.'}
+          </p>
+          <div className="hero-panel-meta">
+            <span><i className="bi bi-geo-alt-fill me-1"></i>{featuredEvent?.venue || 'Venue pending'}</span>
+            <span><i className="bi bi-calendar-event me-1"></i>{formatDate(featuredEvent?.eventDate, true)}</span>
+          </div>
+        </div>
+        <div className="hero-panel-side">
+          <span>Live event pool</span>
+          <strong>{events.length}</strong>
+          <small>events currently listed</small>
+        </div>
+      </div>
+    </section>
+  );
+}

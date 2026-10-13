@@ -7,6 +7,15 @@ const CATEGORIES = [
   { id: 'Cultural', label: 'Cultural', icon: 'bi-music-note-beamed', color: 'warning', sub: 'Dance, Drama & Music Bands' }
 ];
 
+const EVENT_IMAGES = {
+  Cricket: '/images/shared-cricket-event.png',
+  Football: '/images/shared-football-event.jpg',
+  'Code Challenge': '/images/code-challenge-event.jpg',
+  Robotics: '/images/shared-robotics-event.jpg',
+  'Dance Competition': '/images/shared-dance-event.jpg',
+  'Singing Competition': '/images/shared-singing-event.jpg'
+};
+
 export default function CategorySection({ events = [], onSelectEventForRegistration }) {
   const [selectedCategory, setSelectedCategory] = useState('Technical');
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,6 +143,12 @@ export default function CategorySection({ events = [], onSelectEventForRegistrat
                 <div className={`event-tile-card h-100 d-flex flex-column ${themeClass}`}>
                   {/* Card Banner / Poster */}
                   <div className="event-tile-banner">
+                    <img
+                      className="event-tile-image"
+                      src={EVENT_IMAGES[ev.title] || EVENT_IMAGES[ev.name] || `/images/${cat.toLowerCase()}-event.jpg`}
+                      alt=""
+                      loading="lazy"
+                    />
                     <div className="banner-backdrop-pattern"></div>
                     <div className="banner-content-box">
                       <span className={`cat-pill ${cat.toLowerCase()}-pill`}>
@@ -193,4 +208,3 @@ export default function CategorySection({ events = [], onSelectEventForRegistrat
     </div>
   );
 }
-

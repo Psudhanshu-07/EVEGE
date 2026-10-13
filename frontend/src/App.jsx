@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
+import StoryStrip from './components/StoryStrip';
+import GallerySection from './components/GallerySection';
 import CategorySection from './components/CategorySection';
 import PaymentScannerPage from './components/PaymentScannerPage';
 import AdminPanel from './components/AdminPanel';
@@ -200,6 +202,7 @@ export default function App() {
           <>
             {currentView === 'home' && (
               <HeroSection
+                events={events}
                 onExplore={() => {
                   const elem = document.getElementById('category-section-anchor');
                   elem?.scrollIntoView({ behavior: 'smooth' });
@@ -208,12 +211,15 @@ export default function App() {
               />
             )}
 
+            {currentView === 'home' && <StoryStrip />}
+
             <div id="category-section-anchor">
               <CategorySection
                 events={events}
                 onSelectEventForRegistration={handleSelectEventForRegistration}
               />
             </div>
+            {currentView === 'home' && <GallerySection events={events} />}
           </>
         )}
       </main>
