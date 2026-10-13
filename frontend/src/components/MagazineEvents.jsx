@@ -23,14 +23,15 @@ function categoryClass(category = '') {
   return value.includes('sport') ? 'category-sports' : value.includes('cultur') ? 'category-cultural' : 'category-technical';
 }
 
-const defaultEvents = [
+const referenceEvents = [
   {
     id: 1,
     name: 'Cricket',
     category: 'Sports',
     eventDate: '2026-10-10',
     venue: 'College Ground',
-    description: 'Cheer on your college teams at a lively match on the ground.'
+    description: 'Cheer on your college teams at a lively match on the ground.',
+    image: '/images/shared-cricket-event.png'
   },
   {
     id: 2,
@@ -38,15 +39,17 @@ const defaultEvents = [
     category: 'Sports',
     eventDate: '2026-10-12',
     venue: 'Sports Ground',
-    description: 'Get together for an exciting match on the sports field.'
+    description: 'Get together for an exciting match on the sports field.',
+    image: '/images/shared-football-event.jpg'
   },
   {
     id: 3,
     name: 'Code Challenge',
     category: 'Technical',
-    eventDate: '2026-10-15',
+    eventDate: '2025-10-15',
     venue: 'Computer Lab',
-    description: 'Take on coding challenges and show off your problem-solving skills.'
+    description: 'Take on coding challenges and show off your problem-solving skills.',
+    image: '/images/code-challenge-event.jpg'
   },
   {
     id: 4,
@@ -54,7 +57,8 @@ const defaultEvents = [
     category: 'Technical',
     eventDate: '2026-10-16',
     venue: 'Engineering Lab',
-    description: 'Explore creative builds and hands-on engineering projects.'
+    description: 'Explore creative builds and hands-on engineering projects.',
+    image: '/images/shared-robotics-event.jpg'
   },
   {
     id: 5,
@@ -62,7 +66,8 @@ const defaultEvents = [
     category: 'Cultural',
     eventDate: '2026-10-18',
     venue: 'Auditorium',
-    description: 'Celebrate student talent with music, dance and performances.'
+    description: 'Celebrate student talent with music, dance and performances.',
+    image: '/images/shared-dance-event.jpg'
   },
   {
     id: 6,
@@ -70,9 +75,30 @@ const defaultEvents = [
     category: 'Cultural',
     eventDate: '2026-10-19',
     venue: 'Auditorium',
-    description: 'Enjoy live performances from talented student singers.'
+    description: 'Enjoy live performances from talented student singers.',
+    image: '/images/shared-singing-event.jpg'
   }
 ];
+
+function getEventImage(event) {
+  if (event.image) return event.image;
+  const name = event.title || event.name || '';
+  if (images[name]) return images[name];
+  const lower = name.toLowerCase();
+  if (lower.includes('cricket')) return '/images/shared-cricket-event.png';
+  if (lower.includes('football')) return '/images/shared-football-event.jpg';
+  if (lower.includes('code') || lower.includes('hack') || lower.includes('tech fest')) return '/images/code-challenge-event.jpg';
+  if (lower.includes('robot') || lower.includes('drone')) return '/images/shared-robotics-event.jpg';
+  if (lower.includes('dance')) return '/images/shared-dance-event.jpg';
+  if (lower.includes('sing') || lower.includes('music')) return '/images/shared-singing-event.jpg';
+  if (lower.includes('chess')) return '/images/shared-chess-match.jpg';
+  if (lower.includes('game') || lower.includes('gaming')) return '/images/shared-gaming-event.jpg';
+  
+  const cat = (event.category || '').toLowerCase();
+  if (cat.includes('sport')) return '/images/shared-cricket-event.png';
+  if (cat.includes('cultur')) return '/images/shared-dance-event.jpg';
+  return '/images/code-challenge-event.jpg';
+}
 
 function formatDate(value) {
   if (!value) return 'Date to be announced';
@@ -87,7 +113,34 @@ export default function MagazineEvents({ events = [], onRegister }) {
   const [category, setCategory] = useState('all');
 
   const sourceEvents = useMemo(() => {
-    return events && events.length > 0 ? events : defaultEvents;
+    const refMap = new Map();
+    referenceEvents.forEach((ev) => refMap.set(ev.name.toLowerCase(), { ...ev }));
+
+    // Link backend IDs if matching events exist in PostgreSQL
+    (events || []).forEach((be) => {
+      const name = (be.title || be.name || '').toLowerCase();
+      if (refMap.has(name)) {
+        refMap.get(name).id = be.id;
+      }
+    });
+
+    const list = Array.from(refMap.values());
+
+    // Only append newly created custom events (excluding old legacy mock tags)
+    const customEvents = (events || []).filter((be) => {
+      const name = (be.title || be.name || '').toLowerCase();
+      return !refMap.has(name) && !name.includes('[srujanam]') && !name.includes('[naad]');
+    }).map((be) => ({
+      id: be.id,
+      name: be.title || be.name,
+      category: be.category || 'Technical',
+      eventDate: be.eventDate || '2026-10-25',
+      venue: be.venue || 'Campus',
+      description: be.description || 'Join us for this exciting campus event.',
+      image: getEventImage(be)
+    }));
+
+    return [...list, ...customEvents];
   }, [events]);
 
   const filtered = useMemo(() => sourceEvents.filter((event) => {
@@ -135,7 +188,7 @@ export default function MagazineEvents({ events = [], onRegister }) {
             <article className="event-card" key={event.id || name}>
               <img
                 className="event-image"
-                src={images[name] || `/images/${kind.replace('category-', '')}-event.jpg`}
+                src={event.image || getEventImage(event)}
                 alt={`${event.category} event`}
                 loading="lazy"
               />

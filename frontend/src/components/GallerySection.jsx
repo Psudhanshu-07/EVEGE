@@ -57,25 +57,9 @@ const defaultGalleryItems = [
   }
 ];
 
-export default function GallerySection({ events = [] }) {
+export default function GallerySection() {
   const dialogRef = useRef(null);
-
-  const items = useMemo(() => {
-    // If dynamic events exist, keep the canonical 9 items first then append extra events
-    const defaultNames = new Set(defaultGalleryItems.map((d) => d.name.toLowerCase()));
-    const extraEvents = events
-      .filter((ev) => {
-        const title = (ev.title || ev.name || '').toLowerCase();
-        return !defaultNames.has(title) && title !== 'code challenge';
-      })
-      .map((ev) => ({
-        name: ev.title || ev.name,
-        category: ev.category || 'Event',
-        image: ev.imageUrl || '/images/technical-event.jpg',
-        details: `${ev.category || 'Event'} · ${ev.eventDate || 'Upcoming'} · ${ev.venue || 'Campus'}`
-      }));
-    return [...defaultGalleryItems, ...extraEvents];
-  }, [events]);
+  const items = defaultGalleryItems;
 
   const openGallery = (item) => {
     const dialog = dialogRef.current;
