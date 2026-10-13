@@ -32,12 +32,12 @@ export default function HeroSection({ events = [], onExplore, onOpenRegister }) 
   return (
     <section className="enhanced-hero" aria-labelledby="hero-title">
       <div className="enhanced-hero-content">
-        <p className="hero-eyebrow">EVEGE &bull; COLLEGE EVENT PORTAL</p>
+        <p className="hero-eyebrow">TSDCEM &bull; COLLEGE MAGAZINE 2026–27</p>
         <div className="portal-icon" aria-hidden="true"><i className="bi bi-mortarboard-fill"></i></div>
         <h1 id="hero-title">Campus stories in motion.</h1>
         <p className="enhanced-hero-copy">
-          Experience the energy of campus through technical events, cultural celebrations,
-          sports moments and the connections that shape student life.
+          Experience the energy of TSDCEM through technical events, cultural celebrations,
+          sports moments, and the stories that shape student life.
         </p>
         <div className="hero-actions">
           <button type="button" className="enhanced-primary-action" onClick={onOpenRegister}>

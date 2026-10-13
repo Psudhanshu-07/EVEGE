@@ -23,28 +23,108 @@ function categoryClass(category = '') {
   return value.includes('sport') ? 'category-sports' : value.includes('cultur') ? 'category-cultural' : 'category-technical';
 }
 
+const defaultEvents = [
+  {
+    id: 1,
+    name: 'Cricket',
+    category: 'Sports',
+    eventDate: '2026-10-10',
+    venue: 'College Ground',
+    description: 'Cheer on your college teams at a lively match on the ground.'
+  },
+  {
+    id: 2,
+    name: 'Football',
+    category: 'Sports',
+    eventDate: '2026-10-12',
+    venue: 'Sports Ground',
+    description: 'Get together for an exciting match on the sports field.'
+  },
+  {
+    id: 3,
+    name: 'Code Challenge',
+    category: 'Technical',
+    eventDate: '2026-10-15',
+    venue: 'Computer Lab',
+    description: 'Take on coding challenges and show off your problem-solving skills.'
+  },
+  {
+    id: 4,
+    name: 'Robotics',
+    category: 'Technical',
+    eventDate: '2026-10-16',
+    venue: 'Engineering Lab',
+    description: 'Explore creative builds and hands-on engineering projects.'
+  },
+  {
+    id: 5,
+    name: 'Dance Competition',
+    category: 'Cultural',
+    eventDate: '2026-10-18',
+    venue: 'Auditorium',
+    description: 'Celebrate student talent with music, dance and performances.'
+  },
+  {
+    id: 6,
+    name: 'Singing Competition',
+    category: 'Cultural',
+    eventDate: '2026-10-19',
+    venue: 'Auditorium',
+    description: 'Enjoy live performances from talented student singers.'
+  }
+];
+
 function formatDate(value) {
   if (!value) return 'Date to be announced';
-  const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+  const date = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
 }
 
 export default function MagazineEvents({ events = [], onRegister }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
-  const filtered = useMemo(() => events.filter((event) => {
+
+  const sourceEvents = useMemo(() => {
+    return events && events.length > 0 ? events : defaultEvents;
+  }, [events]);
+
+  const filtered = useMemo(() => sourceEvents.filter((event) => {
     const name = event.title || event.name || '';
-    const matchesCategory = category === 'all' || event.category === category;
+    const matchesCategory = category === 'all' || (event.category || '').toLowerCase() === category.toLowerCase();
     return matchesCategory && `${name} ${event.category || ''} ${event.venue || ''}`.toLowerCase().includes(query.toLowerCase());
-  }), [events, query, category]);
+  }), [sourceEvents, query, category]);
 
   return (
     <section className="events-section" id="events" aria-labelledby="events-title">
-      <div className="section-heading"><p className="section-eyebrow">MAKE IT A DAY TO REMEMBER</p><h2 id="events-title">Upcoming Events</h2><p>Explore our upcoming college events</p></div>
+      <div className="section-heading">
+        <p className="section-eyebrow">MAKE IT A DAY TO REMEMBER</p>
+        <h2 id="events-title">Upcoming Events</h2>
+        <p>Explore our upcoming college events</p>
+      </div>
       <div className="event-tools">
-        <label className="search-box" htmlFor="event-search"><span aria-hidden="true">⌕</span><input id="event-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search events, categories or venues" /></label>
+        <label className="search-box" htmlFor="event-search">
+          <span aria-hidden="true">&#x2315;</span>
+          <input
+            id="event-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search events, categories or venues"
+          />
+        </label>
         <div className="filter-list" role="group" aria-label="Filter events by category">
-          {['all', 'Technical', 'Cultural', 'Sports'].map((value) => <button type="button" key={value} className={`filter-button ${category === value ? 'active' : ''}`} onClick={() => setCategory(value)}>{value === 'all' ? 'All events' : value}</button>)}
+          {['all', 'Technical', 'Cultural', 'Sports'].map((value) => (
+            <button
+              type="button"
+              key={value}
+              className={`filter-button ${category.toLowerCase() === value.toLowerCase() ? 'active' : ''}`}
+              onClick={() => setCategory(value)}
+            >
+              {value === 'all' ? 'All events' : value}
+            </button>
+          ))}
         </div>
       </div>
       <div className="event-grid">
@@ -52,14 +132,30 @@ export default function MagazineEvents({ events = [], onRegister }) {
           const name = event.title || event.name;
           const kind = categoryClass(event.category);
           return (
-            <article className="event-card" key={event.id}>
-              <img className="event-image" src={images[name] || `/images/${kind.replace('category-', '')}-event.jpg`} alt={`${event.category} event`} loading="lazy" />
+            <article className="event-card" key={event.id || name}>
+              <img
+                className="event-image"
+                src={images[name] || `/images/${kind.replace('category-', '')}-event.jpg`}
+                alt={`${event.category} event`}
+                loading="lazy"
+              />
               <div className="event-content">
                 <span className={`category ${kind}`}>{event.category}</span>
                 <h3>{name}</h3>
-                <p className="event-description">{event.description || details[name] || `Join us for this ${String(event.category || 'campus').toLowerCase()} event.`}</p>
-                <p className="event-meta"><span>🗓 {formatDate(event.eventDate)}</span><span>📍 {event.venue || 'Campus venue'}</span></p>
-                <button type="button" className={`register-button ${kind}`} onClick={() => onRegister(event)}>Register</button>
+                <p className="event-description">
+                  {event.description || details[name] || `Join us for this ${String(event.category || 'campus').toLowerCase()} event.`}
+                </p>
+                <p className="event-meta">
+                  <span>&#x1F5D3; {formatDate(event.eventDate)}</span>
+                  <span>&#x1F4CD; {event.venue || 'Campus venue'}</span>
+                </p>
+                <button
+                  type="button"
+                  className={`register-button ${kind}`}
+                  onClick={() => onRegister(event)}
+                >
+                  Register
+                </button>
               </div>
             </article>
           );
