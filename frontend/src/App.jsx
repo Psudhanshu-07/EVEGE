@@ -8,6 +8,15 @@ import PaymentScannerPage from './components/PaymentScannerPage';
 import AdminPanel from './components/AdminPanel';
 import MyRegistrations from './components/MyRegistrations';
 import AuthModal from './components/AuthModal';
+import SchedulingAssistant from './components/SchedulingAssistant';
+import UnifiedRegistrationPage from './components/UnifiedRegistrationPage';
+import NssLanding from './components/NssLanding';
+import NssApplicationForm from './components/NssApplicationForm';
+import NssVolunteerDashboard from './components/NssVolunteerDashboard';
+import NssTaskDetail from './components/NssTaskDetail';
+import LeaderboardPage from './components/LeaderboardPage';
+import AdminNssPanel from './components/AdminNssPanel';
+import { nssSeedDemo } from './services/apiService';
 import {
   fetchEvents,
   fetchStats,
@@ -42,6 +51,8 @@ export default function App() {
   const [authInitialMode, setAuthInitialMode] = useState('student-register');
   const [banner, setBanner] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [nssTaskId, setNssTaskId] = useState(null);
+  const [leaderboardCategory, setLeaderboardCategory] = useState('Sports');
 
   // Fetch events, stats, registrations from PostgreSQL backend
   const loadAll = useCallback(async () => {
@@ -112,7 +123,7 @@ export default function App() {
   // Triggered when student clicks "Register & Pay" on any event card
   const handleSelectEventForRegistration = (event) => {
     setSelectedEvent(event);
-    setCurrentView('payment');
+    setCurrentView('unified-register'); // unified college/external flow (replaces legacy payment view)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -125,6 +136,13 @@ export default function App() {
     });
     loadAll();
   };
+
+  // Seed demo NSS tasks (must be signed-in admin) so the admin panel has reviewable data.
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'ADMIN') {
+      nssSeedDemo().catch(() => {});
+    }
+  }, [currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="evege-app-root d-flex flex-column min-vh-100">
@@ -163,6 +181,86 @@ export default function App() {
         {/* VIEW: ADMIN PANEL (Direct redirect on admin login) */}
         {currentView === 'admin' && (
           <AdminPanel onBackToHome={() => setCurrentView('home')} />
+        )}
+
+        {/* VIEW: ADMIN NSS + SCORING EXTENSION */}
+        {currentView === 'admin-nss' && (
+          <AdminNssPanel onBackToHome={() => setCurrentView('admin')} />
+        )}
+
+        {/* VIEW: SCHEDULING ASSISTANT */}
+        {currentView === 'scheduling' && (
+          <SchedulingAssistant
+            events={events}
+            onBack={() => setCurrentView('events')}
+            onRegister={(eventLike) => {
+              const full = events.find((e) => e.id === eventLike.eventId);
+              if (full) handleSelectEventForRegistration(full);
+              else window.alert('Full event details could not be found for registration.');
+            }}
+          />
+        )}
+
+        {/* VIEW: UNIFIED REGISTRATION */}
+        {currentView === 'unified-register' && selectedEvent && (
+          <UnifiedRegistrationPage
+            event={selectedEvent}
+            currentUser={currentUser}
+            onBack={() => {
+              setSelectedEvent(null);
+              setCurrentView('events');
+              loadAll();
+            }}
+            onOpenAuth={() => handleOpenAuth('student-login')}
+            onPayInstead={() => setCurrentView('payment')}
+          />
+        )}
+
+        {/* VIEW: NSS LANDING */}
+        {currentView === 'nss' && (
+          <NssLanding
+            currentUser={currentUser}
+            onBack={() => setCurrentView('home')}
+            onBecomeVolunteer={() => setCurrentView('nss-apply')}
+            onDashboard={() => setCurrentView('nss-dashboard')}
+          />
+        )}
+
+        {/* VIEW: NSS APPLICATION */}
+        {currentView === 'nss-apply' && (
+          <NssApplicationForm
+            currentUser={currentUser}
+            onBack={() => setCurrentView('nss')}
+            onDashboard={() => setCurrentView('nss-dashboard')}
+          />
+        )}
+
+        {/* VIEW: NSS VOLUNTEER DASHBOARD */}
+        {currentView === 'nss-dashboard' && (
+          <NssVolunteerDashboard
+            currentUser={currentUser}
+            onBack={() => setCurrentView('nss')}
+            onOpenTask={(t) => { setNssTaskId(t.id); setCurrentView('nss-task'); }}
+          />
+        )}
+
+        {/* VIEW: NSS TASK DETAIL */}
+        {currentView === 'nss-task' && nssTaskId != null && (
+          <NssTaskDetail
+            currentUser={currentUser}
+            taskId={nssTaskId}
+            onBack={() => setCurrentView('nss-dashboard')}
+          />
+        )}
+
+        {/* VIEW: CATEGORY LEADERBOARD */}
+        {currentView === 'leaderboard' && (
+          <LeaderboardPage
+            category={leaderboardCategory}
+            currentUser={currentUser}
+            onBack={() => setCurrentView('home')}
+            onPickCategory={(c) => setLeaderboardCategory(c)}
+          />
         )}
 
         {/* VIEW: MY REGISTRATIONS (Only visible when logged in) */}
@@ -214,10 +312,55 @@ export default function App() {
 
       {/* Footer */}
       <footer className="site-footer" id="contact">
-        <a className="footer-brand" href="#home">TSDCEM</a>
-        <p>Making campus moments happen.</p>
-        <p>Questions? Reach out to your student event coordinator.</p>
-        <span>&copy; 2026 TSDCEM College Magazine</span>
+        <div className="footer-main">
+          <div className="footer-col footer-col-brand">
+            <a className="footer-brand" href="#home">TSDCEM</a>
+            <p className="footer-tagline">Making campus moments happen.</p>
+            <p className="footer-note small">
+              Questions? Reach out to your student event coordinator.
+            </p>
+          </div>
+          <div className="footer-col">
+            <h6 className="footer-col-title">Official</h6>
+            <a
+              className="footer-link"
+              href="https://www.tsdcem.ac.in/"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <i className="bi bi-globe2 me-2"></i>College Website
+            </a>
+            <a
+              className="footer-link"
+              href="https://youtube.com/@tsdcem"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <i className="bi bi-youtube me-2"></i>YouTube Channel
+            </a>
+          </div>
+          <div className="footer-col">
+            <h6 className="footer-col-title">Social</h6>
+            <a
+              className="footer-link"
+              href="https://www.instagram.com/tsdcem"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <i className="bi bi-instagram me-2"></i>College Instagram
+            </a>
+            <a
+              className="footer-link"
+              href="https://www.instagram.com/tsdcem_ecell"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <i className="bi bi-lightning-charge me-2"></i>E-Cell Instagram
+            </a>
+          </div>
+        </div>
+        <div className="footer-rule"></div>
+        <span>&copy; 2026 TSDCEM College Magazine &middot; Powered by EVEGE</span>
       </footer>
 
       {/* Auth Modal (Register / Login / Admin) */}

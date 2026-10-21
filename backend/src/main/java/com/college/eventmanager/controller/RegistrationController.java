@@ -9,7 +9,9 @@ import com.college.eventmanager.repository.EventRepository;
 import com.college.eventmanager.repository.RegistrationRepository;
 import com.college.eventmanager.repository.StudentRepository;
 import com.college.eventmanager.repository.UserRepository;
+import com.college.eventmanager.dto.UnifiedRegistrationRequest;
 import com.college.eventmanager.service.AccountSyncService;
+import com.college.eventmanager.service.UnifiedRegistrationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,19 +32,33 @@ public class RegistrationController {
     private final UserRepository userRepository;
     private final AccountSyncService accountSyncService;
     private final PasswordEncoder passwordEncoder;
+    private final UnifiedRegistrationService unifiedRegistrationService;
 
     public RegistrationController(RegistrationRepository registrationRepository,
                                   EventRepository eventRepository,
                                   StudentRepository studentRepository,
                                   UserRepository userRepository,
                                   AccountSyncService accountSyncService,
-                                  PasswordEncoder passwordEncoder) {
+                                  PasswordEncoder passwordEncoder,
+                                  UnifiedRegistrationService unifiedRegistrationService) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.accountSyncService = accountSyncService;
         this.passwordEncoder = passwordEncoder;
+        this.unifiedRegistrationService = unifiedRegistrationService;
+    }
+
+    /**
+     * POST /api/registrations/unified — new endpoint for COLLEGE / EXTERNAL participants.
+     * Division + branch for internal students are taken from trusted profile data only.
+     * Existing POST /api/registrations flow remains fully functional.
+     */
+    @PostMapping("/unified")
+    public ResponseEntity<?> unifiedRegistration(@RequestBody UnifiedRegistrationRequest request,
+                                                 @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return unifiedRegistrationService.register(request, authHeader);
     }
 
     @GetMapping

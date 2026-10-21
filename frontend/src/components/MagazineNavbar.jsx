@@ -48,6 +48,27 @@ export default function MagazineNavbar({ currentView, setCurrentView, currentUse
           </button>
           <button
             type="button"
+            className={currentView === 'scheduling' ? 'nav-link-button active' : 'nav-link-button'}
+            onClick={() => setCurrentView('scheduling')}
+          >
+            <i className="bi bi-calendar2-check me-1"></i>Plan My Day
+          </button>
+          <button
+            type="button"
+            className={currentView === 'leaderboard' ? 'nav-link-button active' : 'nav-link-button'}
+            onClick={() => setCurrentView('leaderboard')}
+          >
+            <i className="bi bi-trophy me-1"></i>Leaderboard
+          </button>
+          <button
+            type="button"
+            className={currentView === 'nss' ? 'nav-link-button active' : 'nav-link-button'}
+            onClick={() => setCurrentView('nss')}
+          >
+            NSS
+          </button>
+          <button
+            type="button"
             className="nav-link-button"
             onClick={() => handleNav('gallery')}
           >
@@ -60,31 +81,60 @@ export default function MagazineNavbar({ currentView, setCurrentView, currentUse
           >
             Contact
           </button>
-          <span className="account-area">
+          <div className="account-area">
             {currentUser ? (
               <>
+                {/* Identity chip: avatar initials + name + role badge */}
+                <span className="account-chip" title={currentUser.email}>
+                  <span className="account-avatar">
+                    {(currentUser.fullName || currentUser.email || '?')
+                      .split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
+                  </span>
+                  <span className="account-meta">
+                    <span className="account-name">
+                      {currentUser.fullName || currentUser.email}
+                    </span>
+                    <span className={`account-role ${currentUser.role === 'ADMIN' ? 'role-admin' : 'role-student'}`}>
+                      {currentUser.role === 'ADMIN' ? 'ADMIN' : 'STUDENT'}
+                    </span>
+                  </span>
+                </span>
+                <span className="account-divider" aria-hidden="true"></span>
+                {/* Role-specific quick actions */}
                 {currentUser.role === 'ADMIN' ? (
-                  <button
-                    type="button"
-                    className="account-link text-warning"
-                    onClick={() => setCurrentView('admin')}
-                  >
-                    Admin Portal
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className={currentView === 'admin' ? 'nav-link-button account-action active' : 'nav-link-button account-action'}
+                      onClick={() => setCurrentView('admin')}
+                    >
+                      <i className="bi bi-gear me-1"></i>Admin Portal
+                    </button>
+                    <button
+                      type="button"
+                      className={currentView === 'admin-nss' ? 'nav-link-button account-action active' : 'nav-link-button account-action'}
+                      onClick={() => setCurrentView('admin-nss')}
+                    >
+                      <i className="bi bi-stars me-1"></i>NSS & Scoring
+                    </button>
+                  </>
                 ) : (
                   <button
                     type="button"
-                    className="account-link"
+                    className={currentView === 'my-registrations' ? 'nav-link-button account-action active' : 'nav-link-button account-action'}
                     onClick={() => setCurrentView('my-registrations')}
                   >
-                    My Passes
+                    <i className="bi bi-ticket-perforated me-1"></i>My Passes
                   </button>
                 )}
-                <span className="account-name" title={currentUser.email}>
-                  {currentUser.fullName || currentUser.email}
-                </span>
-                <button type="button" className="account-button" onClick={onLogout}>
-                  Sign out
+                <button
+                  type="button"
+                  className="account-signout"
+                  onClick={onLogout}
+                  title="Sign out"
+                  aria-label="Sign out"
+                >
+                  <i className="bi bi-box-arrow-right"></i>
                 </button>
               </>
             ) : (
@@ -105,7 +155,7 @@ export default function MagazineNavbar({ currentView, setCurrentView, currentUse
                 </button>
               </>
             )}
-          </span>
+          </div>
         </div>
       </nav>
     </header>

@@ -113,34 +113,25 @@ export default function MagazineEvents({ events = [], onRegister }) {
   const [category, setCategory] = useState('all');
 
   const sourceEvents = useMemo(() => {
-    const refMap = new Map();
-    referenceEvents.forEach((ev) => refMap.set(ev.name.toLowerCase(), { ...ev }));
-
-    // Link backend IDs if matching events exist in PostgreSQL
-    (events || []).forEach((be) => {
-      const name = (be.title || be.name || '').toLowerCase();
-      if (refMap.has(name)) {
-        refMap.get(name).id = be.id;
-      }
-    });
-
-    const list = Array.from(refMap.values());
-
-    // Only append newly created custom events (excluding old legacy mock tags)
-    const customEvents = (events || []).filter((be) => {
-      const name = (be.title || be.name || '').toLowerCase();
-      return !refMap.has(name) && !name.includes('[srujanam]') && !name.includes('[naad]');
-    }).map((be) => ({
+    // Primary source: real PostgreSQL events (Tech Fest [Srujanam], Cultural/Sports [Naad], ...).
+    const backendEvents = (events || []).map((be) => ({
+      ...be,
       id: be.id,
-      name: be.title || be.name,
+      name: be.title || be.name || 'Campus Event',
       category: be.category || 'Technical',
-      eventDate: be.eventDate || '2026-10-25',
+      eventDate: be.eventDate || '',
+      eventTime: be.eventTime || '',
       venue: be.venue || 'Campus',
       description: be.description || 'Join us for this exciting campus event.',
+      fee: be.registrationFee,
       image: getEventImage(be)
     }));
 
-    return [...list, ...customEvents];
+    // Fallback only when the backend is unreachable — keep the grid from going empty.
+    if (backendEvents.length === 0) {
+      return referenceEvents;
+    }
+    return backendEvents;
   }, [events]);
 
   const filtered = useMemo(() => sourceEvents.filter((event) => {
@@ -168,7 +159,7 @@ export default function MagazineEvents({ events = [], onRegister }) {
           />
         </label>
         <div className="filter-list" role="group" aria-label="Filter events by category">
-          {['all', 'Technical', 'Cultural', 'Sports'].map((value) => (
+          {['all', ...Array.from(new Set(sourceEvents.map((e) => e.category).filter(Boolean)))].map((value) => (
             <button
               type="button"
               key={value}
@@ -200,14 +191,16 @@ export default function MagazineEvents({ events = [], onRegister }) {
                 </p>
                 <p className="event-meta">
                   <span>&#x1F5D3; {formatDate(event.eventDate)}</span>
+                  {event.eventTime && <span>&#x23F0; {event.eventTime}</span>}
                   <span>&#x1F4CD; {event.venue || 'Campus venue'}</span>
+                  {event.fee != null && <span className="event-fee-badge">&#8377;{Number(event.fee).toFixed(0)} entry</span>}
                 </p>
                 <button
                   type="button"
                   className={`register-button ${kind}`}
                   onClick={() => onRegister(event)}
                 >
-                  Register
+                  Register &amp; Pay &#8377;{event.fee != null ? Number(event.fee).toFixed(0) : 100}
                 </button>
               </div>
             </article>

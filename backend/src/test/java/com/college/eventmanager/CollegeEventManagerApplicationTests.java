@@ -124,8 +124,8 @@ class CollegeEventManagerApplicationTests {
 
         mvc.perform(get("/api/auth/students"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')][0].fullName").value("Asha Rao"))
-                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')][0].phone").value("+91 9876543210"))
+                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')].fullName").value("Asha Rao"))
+                .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')].phone").value("+91 9876543210"))
                 .andExpect(jsonPath("$[?(@.email == 'asha@gmail.com')].password").doesNotExist());
     }
 

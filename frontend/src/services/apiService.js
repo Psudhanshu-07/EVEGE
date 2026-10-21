@@ -42,5 +42,45 @@ export const fetchRegistrations = (email) => {
   return http.get(url);
 };
 export const registerForEvent = (registrationData) => http.post('/registrations', registrationData);
+// Unified registration (COLLEGE / EXTERNAL)
+export const unifiedRegister = (payload) => http.post('/registrations/unified', payload);
+
+// ---------- Scheduling assistant ----------
+export const scheduleDay = (date) => http.get(`/schedule/day?date=${encodeURIComponent(date)}`);
+export const scheduleAssess = (date, selectedEventIds) =>
+  http.post('/schedule/assess', { date, selectedEventIds });
+
+// ---------- NSS ----------
+export const nssSummary = () => http.get('/nss/summary');
+export const nssStatus = (email) => http.get(`/nss/status${email ? `?email=${encodeURIComponent(email)}` : ''}`);
+export const nssApply = (payload) => http.post('/nss/apply', payload);
+export const nssWithdraw = () => http.post('/nss/withdraw');
+export const nssApplications = () => http.get('/nss/applications');
+export const nssReviewApplication = (id, decision, adminNote) =>
+  http.post(`/nss/applications/${id}/review`, { decision, adminNote });
+export const nssTasks = (all = false) => http.get(`/nss/tasks${all ? '?all=true' : ''}`);
+export const nssTask = (id) => http.get(`/nss/tasks/${id}`);
+export const nssCreateTask = (payload) => http.post('/nss/tasks', payload);
+export const nssUpdateTask = (id, payload) => http.put(`/nss/tasks/${id}`, payload);
+export const nssDeleteTask = (id) => http.delete(`/nss/tasks/${id}`);
+export const nssRegisterForTask = (id) => http.post(`/nss/tasks/${id}/register`);
+export const nssTaskRegistrations = (id) => http.get(`/nss/tasks/${id}/registrations`);
+export const nssMarkAttendance = (id, volunteerEmail, attendance) =>
+  http.post(`/nss/tasks/${id}/attendance`, { volunteerEmail, attendance });
+export const nssVerifyHours = (id, volunteerEmail, actualHours) =>
+  http.post(`/nss/tasks/${id}/hours`, { volunteerEmail, actualHours });
+export const nssMyRegistrations = (email) =>
+  http.get(`/nss/my/registrations${email ? `?email=${encodeURIComponent(email)}` : ''}`);
+export const nssMyHours = (email) =>
+  http.get(`/nss/my/hours${email ? `?email=${encodeURIComponent(email)}` : ''}`);
+export const nssSeedDemo = () => http.post('/nss/seed-demo');
+
+// ---------- Leaderboards & scoring ----------
+export const leaderboard = (category, includeDetails = false) =>
+  http.get(`/leaderboard/${encodeURIComponent(category)}${includeDetails ? '?includeDetails=true' : ''}`);
+export const myLeaderboardResults = (category) =>
+  http.get(`/leaderboard/me?category=${encodeURIComponent(category)}`);
+export const saveScore = (payload) => http.post('/leaderboard/scores', payload);
+export const scoresForEvent = (eventId) => http.get(`/leaderboard/scores/${eventId}`);
 
 export default http;
