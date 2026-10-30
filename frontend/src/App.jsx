@@ -192,6 +192,7 @@ export default function App() {
         {currentView === 'scheduling' && (
           <SchedulingAssistant
             events={events}
+            registrations={registrations}
             onBack={() => setCurrentView('events')}
             onRegister={(eventLike) => {
               const full = events.find((e) => e.id === eventLike.eventId);

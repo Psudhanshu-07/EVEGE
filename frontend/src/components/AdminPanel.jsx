@@ -33,7 +33,8 @@ export default function AdminPanel({ onBackToHome }) {
     title: '',
     category: 'Technical',
     eventDate: '',
-    eventTime: '',
+    startTime: '',
+    endTime: '',
     venue: '',
     description: '',
     tagline: 'Build \u2022 Learn \u2022 Grow',
@@ -41,6 +42,25 @@ export default function AdminPanel({ onBackToHome }) {
     upiId: 'evege@okaxis'
   });
   const [submittingEvent, setSubmittingEvent] = useState(false);
+
+  const timeInvalid = newEvent.startTime && newEvent.endTime && newEvent.startTime >= newEvent.endTime;
+
+  // "24 November 2026" — same human-readable convention as the seeded events.
+  const formatEventDateForDb = (isoDate) => {
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return `${d} ${MONTHS[m - 1]} ${y}`;
+  };
+
+  // "9:00 AM - 5:00 PM" — same time-range convention the scheduler parses.
+  const formatClockForDb = (hhmm) => {
+    if (!hhmm) return '';
+    const [hStr, m] = hhmm.split(':');
+    const h = Number(hStr);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:${m} ${ampm}`;
+  };
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -69,11 +89,17 @@ export default function AdminPanel({ onBackToHome }) {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     if (!newEvent.title.trim()) return;
+    if (!newEvent.eventDate) return; // calendar date required
+    if (!newEvent.startTime || !newEvent.endTime) return; // both times required
+    if (newEvent.startTime >= newEvent.endTime) return; // end must be after start
 
     setSubmittingEvent(true);
     try {
       await createEvent({
         ...newEvent,
+        // Store in the site's existing conventions: human date + ranged time string.
+        eventDate: formatEventDateForDb(newEvent.eventDate),
+        eventTime: `${formatClockForDb(newEvent.startTime)} - ${formatClockForDb(newEvent.endTime)}`,
         registrationFee: Number(newEvent.registrationFee) || 100
       });
       setShowAddModal(false);
@@ -81,7 +107,8 @@ export default function AdminPanel({ onBackToHome }) {
         title: '',
         category: 'Technical',
         eventDate: '',
-        eventTime: '',
+        startTime: '',
+        endTime: '',
         venue: '',
         description: '',
         tagline: 'Build \u2022 Learn \u2022 Grow',
@@ -624,25 +651,42 @@ export default function AdminPanel({ onBackToHome }) {
                 <div className="col-12 col-md-6">
                   <label className="form-label small fw-bold">Event Date *</label>
                   <input
-                    type="text"
+                    type="date"
                     className="form-control"
-                    placeholder="e.g. 24 November 2026"
                     value={newEvent.eventDate}
                     onChange={(e) => setNewEvent({ ...newEvent, eventDate: e.target.value })}
                     required
                   />
+                  {newEvent.eventDate && (
+                    <div className="text-muted extra-small mt-1">
+                      Saves as {formatEventDateForDb(newEvent.eventDate)}
+                    </div>
+                  )}
                 </div>
 
-                <div className="col-12 col-md-6">
-                  <label className="form-label small fw-bold">Event Time *</label>
+                <div className="col-12 col-md-3">
+                  <label className="form-label small fw-bold">Start Time *</label>
                   <input
-                    type="text"
+                    type="time"
                     className="form-control"
-                    placeholder="e.g. 10:00 AM - 5:00 PM"
-                    value={newEvent.eventTime}
-                    onChange={(e) => setNewEvent({ ...newEvent, eventTime: e.target.value })}
+                    value={newEvent.startTime}
+                    onChange={(e) => setNewEvent({ ...newEvent, startTime: e.target.value })}
                     required
                   />
+                </div>
+
+                <div className={`col-12 col-md-3`}>
+                  <label className="form-label small fw-bold">End Time *</label>
+                  <input
+                    type="time"
+                    className={`form-control${timeInvalid ? ' is-invalid' : ''}`}
+                    value={newEvent.endTime}
+                    onChange={(e) => setNewEvent({ ...newEvent, endTime: e.target.value })}
+                    required
+                  />
+                  {timeInvalid && (
+                    <div className="invalid-feedback">End time must be after start time.</div>
+                  )}
                 </div>
 
                 <div className="col-12">
@@ -691,7 +735,7 @@ export default function AdminPanel({ onBackToHome }) {
                 <button
                   type="submit"
                   className="btn btn-primary fw-bold px-4"
-                  disabled={submittingEvent}
+                  disabled={submittingEvent || timeInvalid}
                 >
                   {submittingEvent ? 'Saving to Database...' : 'Save & Publish Event'}
                 </button>

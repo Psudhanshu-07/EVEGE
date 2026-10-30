@@ -1552,6 +1552,15 @@ body {
 .btn-sm-evege { padding: 7px 14px; font-size: 0.84rem; border-radius: 10px; }
 
 .leader-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 22px rgba(20, 38, 63, 0.07); }
+
+/* Plan-My-Day: all-events grouped-by-date table */
+.sched-dategroup { margin-bottom: 20px; }
+.sched-dategroup:last-child { margin-bottom: 6px; }
+.sched-datehead { font-weight: 800; font-size: 0.95rem; color: #14263f; margin-bottom: 8px; }
+.schedule-table-wrap { overflow-x: auto; background: #fff; border: 1px solid rgba(20, 38, 63, 0.08); border-radius: 14px; box-shadow: 0 8px 22px rgba(20, 38, 63, 0.06); }
+.schedule-table thead th { background: #f2f6fd; color: #2456a8; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid rgba(20, 38, 63, 0.08); white-space: nowrap; }
+.schedule-table td { font-size: 0.9rem; vertical-align: middle; }
+.schedule-table .badge { font-weight: 700; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
 .leader-table th { background: #14263f; color: #fff; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 12px 16px; text-align: left; }
 .leader-table td { padding: 12px 16px; border-top: 1px solid rgba(20, 38, 63, 0.07); font-size: 0.92rem; }
 .leader-table tr.me td { background: #f2f6fd; font-weight: 700; }
